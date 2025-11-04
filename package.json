@@ -1,7 +1,7 @@
 {
 	"name": "webhook-email-fn",
 	"version": "1.0.0",
-	"type": "module",
+	"main": "index.js",
 	"dependencies": {
 		"nodemailer": "^6.9.0"
 	}
