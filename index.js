@@ -27,12 +27,20 @@ module.exports = async (context) => {
       },
     });
 
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to,
-      subject,
-      text,
-    });
+  await transporter.sendMail({
+  from: process.env.SMTP_FROM,
+  to,
+  subject,
+  text, // hâlâ dursun, plain text fallback
+  html: `
+    <div style="font-family:Arial,sans-serif;padding:20px;border:1px solid #ddd;border-radius:10px;">
+      <h2 style="color:#1e88e5;">Webhook Mail</h2>
+      <p>${text}</p>
+      <hr>
+      <p style="font-size:12px;color:#888;">Bu e-posta Appwrite Function ve Nodemailer üzerinden gönderildi.</p>
+    </div>
+  `,
+});
 
     return res.json({ ok: true, message: 'Mail gönderildi' }, 200);
   } catch (err) {
@@ -40,3 +48,4 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
