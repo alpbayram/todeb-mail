@@ -1,32 +1,43 @@
-const nodemailer = require("nodemailer");
+const nodemailer = require('nodemailer');
 
-module.exports = async function (req, res) {
-	try {
-		// Şimdilik payload kullanmıyoruz, sadece mail testi yapalım
-		// İleride req.body'den JSON okuyup buraya koyarız.
+module.exports = async (context) => {
+  const { req, res, log, error } = context;
 
-		// Env'den SMTP bilgilerini oku
-		const transporter = nodemailer.createTransport({
-			host: process.env.SMTP_HOST, // proxy.uzmanposta.com
-			port: Number(process.env.SMTP_PORT || 587), // 587
-			
-			auth: {
-				user: process.env.SMTP_USER, // epostaadresi@todeb.org.tr
-				pass: process.env.SMTP_PASS, // şifre
-			},
-		});
+  try {
+    log('Function started');
 
-		await transporter.sendMail({
-			from: process.env.SMTP_FROM, // Gönderen
-			to: process.env.SMTP_TO || process.env.SMTP_FROM, // Test için kendine
-			subject: "Appwrite mail testi",
-			text: "Bu mail Appwrite Function + Nodemailer ile gönderildi.",
-		});
+    // SMTP transporter
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,                // proxy.uzmanposta.com
+      port: Number(process.env.SMTP_PORT || 587), // 587
 
-		return res.json({ ok: true, message: "Mail gönderildi" });
-	} catch (err) {
-		console.error(err);
-		return res.status(500).json({ ok: false, error: err.message });
-	}
+      auth: {
+        user: process.env.SMTP_USER,              // epostaadresi@todeb.org.tr
+        pass: process.env.SMTP_PASS,              // şifre
+      },
+    });
+
+    // İstersen buradan body alabilirsin:
+    // const body = req.body || {};
+    // şimdilik sabit bir test maili atalım
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM,                         // kimden
+      to: process.env.SMTP_TO || process.env.SMTP_FROM,    // test için kendine
+      subject: 'Appwrite + Nodemailer test',
+      text: 'Bu mail Appwrite Function kullanılarak gönderildi.',
+    });
+
+    // Başarılı cevap
+    return res.json(
+      { ok: true, message: 'Mail gönderildi' },
+      200
+    );
+  } catch (err) {
+    // Hata logla + cevap döndür
+    error(err);
+    return res.json(
+      { ok: false, error: err.message },
+      500
+    );
+  }
 };
-
