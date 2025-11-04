@@ -32,14 +32,35 @@ module.exports = async (context) => {
   to,
   subject,
   text, // hâlâ dursun, plain text fallback
-  html: `
-    <div style="font-family:Arial,sans-serif;padding:20px;border:1px solid #ddd;border-radius:10px;">
-      <h2 style="color:#1e88e5;">Webhook Mail</h2>
-      <p>${text}</p>
-      <hr>
-      <p style="font-size:12px;color:#888;">Böyle formatı ayarlayabiliriz kemal (sanırım :D)</p>
+ const html = `
+  <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;">
+    <div style="background-color: #f8fafc; padding: 20px 24px; border-bottom: 1px solid #e5e7eb;">
+      <h2 style="margin: 0; color: #111827; font-size: 18px;">Yeni Değişiklikler</h2>
+      <p style="margin: 10px 0 0; color: #1e40af; font-size: 14px;">
+        Bu sürümde aşağıdaki güncellemeler yapıldı:
+      </p>
+      <div style="background-color: #e0f2fe; border: 1px solid #bae6fd; padding: 12px; margin-top: 12px; border-radius: 6px; font-size: 14px; color: #0c4a6e;">
+        ${body.newChanges || "Yeni değişiklik metni burada yer alacak."}
+      </div>
     </div>
-  `,
+
+    <div style="background-color: #ffffff; padding: 20px 24px;">
+      <h2 style="margin: 0; color: #111827; font-size: 18px;">Önceki Hali</h2>
+      <p style="margin: 10px 0 0; color: #4b5563; font-size: 14px;">
+        Önceki versiyon içeriği:
+      </p>
+      <div style="background-color: #f3f4f6; border: 1px solid #e5e7eb; padding: 12px; margin-top: 12px; border-radius: 6px; font-size: 14px; color: #374151;">
+        ${body.oldState || "Önceki hali burada yer alacak."}
+      </div>
+    </div>
+
+    <div style="background-color: #f9fafb; text-align: center; padding: 16px; border-top: 1px solid #e5e7eb;">
+      <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+        Distil.io Otomatik Bildirim • ${new Date().toLocaleDateString('tr-TR')}
+      </p>
+    </div>
+  </div>
+`;
 });
 
     return res.json({ ok: true, message: 'Mail gönderildi' }, 200);
@@ -48,5 +69,6 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
 
 
