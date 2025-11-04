@@ -26,13 +26,7 @@ module.exports = async (context) => {
         pass: process.env.SMTP_PASS,
       },
     });
-
-  await transporter.sendMail({
-  from: process.env.SMTP_FROM,
-  to,
-  subject,
-  text, // hâlâ dursun, plain text fallback
- const html = `
+const html = `
   <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;">
     <div style="background-color: #f8fafc; padding: 20px 24px; border-bottom: 1px solid #e5e7eb;">
       <h2 style="margin: 0; color: #111827; font-size: 18px;">Yeni Değişiklikler</h2>
@@ -61,7 +55,15 @@ module.exports = async (context) => {
     </div>
   </div>
 `;
+
+    
+ await transporter.sendMail({
+  from: process.env.SMTP_FROM,
+  to,
+  subject: 'Distil.io Bildirim - Yeni Güncellemeler',
+  html,
 });
+
 
     return res.json({ ok: true, message: 'Mail gönderildi' }, 200);
   } catch (err) {
@@ -69,6 +71,7 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
 
 
 
