@@ -9,7 +9,7 @@ module.exports = async function (req, res) {
 		const transporter = nodemailer.createTransport({
 			host: process.env.SMTP_HOST, // proxy.uzmanposta.com
 			port: Number(process.env.SMTP_PORT || 587), // 587
-			secure: process.env.SMTP_SECURE === "true", // 587 için false olacak
+			
 			auth: {
 				user: process.env.SMTP_USER, // epostaadresi@todeb.org.tr
 				pass: process.env.SMTP_PASS, // şifre
@@ -29,3 +29,4 @@ module.exports = async function (req, res) {
 		return res.status(500).json({ ok: false, error: err.message });
 	}
 };
+
