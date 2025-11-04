@@ -20,20 +20,21 @@ module.exports = async (context) => {
     // İstersen buradan body alabilirsin:
     // const body = req.body || {};
     // şimdilik sabit bir test maili atalım
-  const html = body.html || `
-  <div style="font-family:Arial;">
-    <h3>${subject}</h3>
-    <p>${text}</p>
-  </div>
-`;
-
-await transporter.sendMail({
+ await transporter.sendMail({
   from: process.env.SMTP_FROM,
   to,
   subject,
-  text,
-  html,
+  text, // hâlâ dursun, plain text fallback
+  html: `
+    <div style="font-family:Arial,sans-serif;padding:20px;border:1px solid #ddd;border-radius:10px;">
+      <h2 style="color:#1e88e5;">Webhook Mail</h2>
+      <p>${text}</p>
+      <hr>
+      <p style="font-size:12px;color:#888;">Bu e-posta Appwrite Function ve Nodemailer üzerinden gönderildi.</p>
+    </div>
+  `,
 });
+
 
     // Başarılı cevap
     return res.json(
@@ -49,5 +50,6 @@ await transporter.sendMail({
     );
   }
 };
+
 
 
