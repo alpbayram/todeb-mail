@@ -20,12 +20,20 @@ module.exports = async (context) => {
     // İstersen buradan body alabilirsin:
     // const body = req.body || {};
     // şimdilik sabit bir test maili atalım
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,                         // kimden
-      to: process.env.SMTP_TO || process.env.SMTP_FROM,    // test için kendine
-      subject: 'Appwrite + Nodemailer test',
-      text: 'Bu mail Distill kullanılarak gönderildi.',
-    });
+  const html = body.html || `
+  <div style="font-family:Arial;">
+    <h3>${subject}</h3>
+    <p>${text}</p>
+  </div>
+`;
+
+await transporter.sendMail({
+  from: process.env.SMTP_FROM,
+  to,
+  subject,
+  text,
+  html,
+});
 
     // Başarılı cevap
     return res.json(
@@ -41,4 +49,5 @@ module.exports = async (context) => {
     );
   }
 };
+
 
