@@ -37,7 +37,7 @@ module.exports = async (context) => {
       <h2 style="color:#1e88e5;">Webhook Mail</h2>
       <p>${text}</p>
       <hr>
-      <p style="font-size:12px;color:#888;">Bu e-posta Appwrite Function ve Nodemailer üzerinden gönderildi.</p>
+      <p style="font-size:12px;color:#888;">Böyle formatı ayarlayabiliriz kemal (sanırım :D)</p>
     </div>
   `,
 });
@@ -48,4 +48,5 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
 
