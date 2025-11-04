@@ -24,7 +24,7 @@ module.exports = async (context) => {
       from: process.env.SMTP_FROM,                         // kimden
       to: process.env.SMTP_TO || process.env.SMTP_FROM,    // test için kendine
       subject: 'Appwrite + Nodemailer test',
-      text: 'Bu mail Appwrite Function kullanılarak gönderildi.',
+      text: 'Bu mail Distill kullanılarak gönderildi.',
     });
 
     // Başarılı cevap
@@ -41,3 +41,4 @@ module.exports = async (context) => {
     );
   }
 };
+
