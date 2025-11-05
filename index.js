@@ -68,7 +68,9 @@ module.exports = async (context) => {
 </div>
 
 `;
-        const html2 = `
+        const html2 = `<!doctype html>
+<html>
+  <body>
     <div
       style='background-color:#ffffff;color:#405464;font-family:Avenir, "Avenir Next LT Pro", Montserrat, Corbel, "URW Gothic", source-sans-pro, sans-serif;font-size:16px;font-weight:400;letter-spacing:0.15008px;line-height:1.5;margin:0;padding:32px 0;min-height:100%;width:100%'
     >
@@ -180,6 +182,8 @@ module.exports = async (context) => {
         </tbody>
       </table>
     </div>
+  </body>
+</html>
 `;
 
 
@@ -201,6 +205,7 @@ module.exports = async (context) => {
         return res.json({ ok: false, error: err.message }, 500);
     }
 };
+
 
 
 
