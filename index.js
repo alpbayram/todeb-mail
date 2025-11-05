@@ -31,7 +31,7 @@ const html = `
   <!-- Üst kısım: Logo ve başlık -->
   <div style="background-color:#f9fafb;padding:24px 24px 16px 24px;text-align:center;border-bottom:1px solid #e5e7eb;">
     <img
-      src="https://todeb.org.tr/img/w-logo.png"
+      src="https://fra.cloud.appwrite.io/v1/storage/buckets/690aedd20007ff371e3f/files/690aeddb0026f4902a30/view?project=6909b793000a48fd66d8&mode=admin"
       alt="Distil.io Logo"
       width="120"
       height="auto"
@@ -84,6 +84,7 @@ const html = `
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
 
 
 
