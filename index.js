@@ -154,7 +154,7 @@ module.exports = async (context) => {
             </tr>
 
             <!-- Spacer -->
-            <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+            <tr><td height="0" style="font-size:0;line-height:0;">&nbsp;</td></tr>
 
             <!-- Önceki Hali -->
             <tr>
@@ -220,6 +220,7 @@ module.exports = async (context) => {
         return res.json({ ok: false, error: err.message }, 500);
     }
 };
+
 
 
 
