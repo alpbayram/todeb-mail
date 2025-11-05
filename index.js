@@ -62,19 +62,140 @@ module.exports = async (context) => {
   <!-- Footer -->
   <div style="background-color:#f9fafb;text-align:center;padding:14px;border-top:1px solid #e5e7eb;">
     <p style="margin:0;font-size:12px;color:#9ca3af;">
-      Distil.io Otomatik Bildirim • ${new Date().toLocaleDateString('tr-TR')}
+      Distil.io Otomatik Bildirim • ${new Date().toLocaleDateString("tr-TR")}
     </p>
   </div>
 </div>
 
 `;
+        const html2 = `<!doctype html>
+<html>
+  <body>
+    <div
+      style='background-color:#ffffff;color:#405464;font-family:Avenir, "Avenir Next LT Pro", Montserrat, Corbel, "URW Gothic", source-sans-pro, sans-serif;font-size:16px;font-weight:400;letter-spacing:0.15008px;line-height:1.5;margin:0;padding:32px 0;min-height:100%;width:100%'
+    >
+      <table
+        align="center"
+        width="100%"
+        style="margin:0 auto;max-width:600px;background-color:#ffffff;border-radius:0"
+        role="presentation"
+        cellspacing="0"
+        cellpadding="0"
+        border="0"
+      >
+        <tbody>
+          <tr style="width:100%">
+            <td>
+              <div
+                style="padding:12px 0px 12px 0px;background-color:#D4D4D4;text-align:center"
+              >
+                <img
+                  alt=""
+                  src="https://fra.cloud.appwrite.io/v1/storage/buckets/690aedd20007ff371e3f/files/690aeddb0026f4902a30/view?project=6909b793000a48fd66d8&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjkwYWYxYjIyZGQ0ZjU2ZTI2ZjQiLCJyZXNvdXJjZUlkIjoiNjkwYWVkZDIwMDA3ZmYzNzFlM2Y6NjkwYWVkZGIwMDI2ZjQ5MDJhMzAiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjQ3NjA2OjEiLCJpYXQiOjE3NjIzMjc1ODh9.cQjTwN7lwlu4yDyXwOaR6j0U1JT4g423hm3YCA05HqM"
+                  height="96"
+                  style="height:96px;outline:none;border:none;text-decoration:none;vertical-align:middle;display:inline-block;max-width:100%"
+                />
+              </div>
+              <h1
+                style="background-color:#D4D4D4;font-weight:bold;text-align:center;margin:0;font-size:32px;padding:0px 24px 0px 24px"
+              >
+                Yeni Değişiklikler
+              </h1>
+              <div
+                style="background-color:#D4D4D4;font-size:16px;font-weight:bold;text-align:center;padding:16px 24px 16px 24px"
+              >
+                Son sürüm güncellemeleri aşağıda listelenmiştir.
+              </div>
+              <div style="height:48px"></div>
+              <div style="border-radius:0;padding:0px 0px 0px 0px">
+                <div style="border:1px solid #d4d4d4;padding:0px 0px 0px 0px">
+                  <div
+                    style="font-size:24px;font-weight:bold;padding:0px 0px 0px 0px"
+                  >
+                    Yeni
+                  </div>
+                </div>
+                <div
+                  style="border:1px solid #d4d4d4;border-radius:0;padding:0px 0px 0px 24px"
+                >
+                  <div
+                    style="font-size:18px;font-weight:normal;padding:16px 0px 16px 0px"
+                  >
+                     ${body.newChanges || "Yeni değişiklik metni burada yer alacak."}
+                  </div>
+                </div>
+              </div>
+              <div style="padding:0px 0px 0px 0px">
+                <div style="height:48px"></div>
+              </div>
+              <div style="padding:0px 0px 0px 0px">
+                <div style="border:1px solid #d4d4d4;padding:0px 0px 0px 0px">
+                  <div
+                    style="font-size:25px;font-weight:bold;padding:0px 0px 0px 0px"
+                  >
+                    Önceki Hali
+                  </div>
+                </div>
+              </div>
+              <div style="border:1px solid #d4d4d4;padding:0px 24px 0px 24px">
+                <div style="font-weight:normal;padding:16px 0px 16px 0px">
+                   ${body.oldState || "Önceki hali burada yer alacak."}
+                </div>
+              </div>
+              <div style="height:24px"></div>
+              <div style="padding:0px 0px 0px 0px">
+                <div style="padding:0px 0px 0px 0px">
+                  <table
+                    align="center"
+                    width="100%"
+                    cellpadding="0"
+                    border="0"
+                    style="table-layout:fixed;border-collapse:collapse"
+                  >
+                    <tbody style="width:100%">
+                      <tr style="width:100%">
+                        <td
+                          style="box-sizing:content-box;vertical-align:middle;padding-left:0;padding-right:8px"
+                        >
+                          <div
+                            style="font-weight:normal;text-align:center;padding:16px 24px 16px 24px"
+                          >
+                            Distill io Otomatik Bildirim
+                          </div>
+                        </td>
+                        <td
+                          style="box-sizing:content-box;vertical-align:middle;padding-left:8px;padding-right:0"
+                        >
+                          <div
+                            style="font-weight:normal;text-align:center;padding:16px 24px 16px 24px"
+                          >
+                            ${new Date().toLocaleDateString("tr-TR")}
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
+`;
+
+
+
+
 
 
         await transporter.sendMail({
             from: process.env.SMTP_FROM,
             to,
             subject: 'Distil.io Bildirim - Yeni Güncellemeler',
-            html,
+            html2,
         });
 
 
