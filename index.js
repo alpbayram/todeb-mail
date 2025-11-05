@@ -103,8 +103,8 @@ module.exports = async (context) => {
                 <img
                   src="https://raw.githubusercontent.com/alpbayram/todeb-mail/refs/heads/main/TODEB_Logo.png"
                   alt="Distil.io Logo"
-                  width="96"
-                  height="96"
+                  width="280"
+                  height="auto"
                   style="display:block;border:none;outline:none;text-decoration:none;"
                 />
               </td>
@@ -220,6 +220,7 @@ module.exports = async (context) => {
         return res.json({ ok: false, error: err.message }, 500);
     }
 };
+
 
 
 
