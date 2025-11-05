@@ -191,7 +191,7 @@ module.exports = async (context) => {
             from: process.env.SMTP_FROM,
             to,
             subject: 'Distil.io Bildirim - Yeni Güncellemeler',
-            html2,
+            html: html2
         });
 
 
@@ -201,6 +201,7 @@ module.exports = async (context) => {
         return res.json({ ok: false, error: err.message }, 500);
     }
 };
+
 
 
 
