@@ -1,37 +1,8 @@
-const nodemailer = require('nodemailer');
-
-module.exports = async (context) => {
-  const { req, res, log, error } = context;
-
-  try {
-    log('Function started');
-
-    // Webhook'tan gelen JSON
-    const body = req.body || {};
-
-    // JSON'dan gelecek alanlar (boşsa env'dekilere düşüyor)
-    const to = body.to || process.env.SMTP_TO || process.env.SMTP_FROM;
-    const subject = body.subject || 'Webhook mail';
-    const text =
-      body.message ||
-      body.text ||
-      JSON.stringify(body, null, 2);
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-const html = `
- <div style="font-family:'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;">
+<div style="font-family:'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;">
   <!-- Üst kısım: Logo ve başlık -->
   <div style="background-color:#f9fafb;padding:24px 24px 16px 24px;text-align:center;border-bottom:1px solid #e5e7eb;">
     <img
-      src="https://fra.cloud.appwrite.io/v1/storage/buckets/690aedd20007ff371e3f/files/690aeddb0026f4902a30/view?project=6909b793000a48fd66d8&mode=admin"
+      src="https://fra.cloud.appwrite.io/v1/storage/buckets/690aedd20007ff371e3f/files/690aeddb0026f4902a30/view?project=6909b793000a48fd66d8&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjkwYWYxYjIyZGQ0ZjU2ZTI2ZjQiLCJyZXNvdXJjZUlkIjoiNjkwYWVkZDIwMDA3ZmYzNzFlM2Y6NjkwYWVkZGIwMDI2ZjQ5MDJhMzAiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjQ3NjA2OjEiLCJpYXQiOjE3NjIzMjQ5MTR9.Andvio7zk6UFQ3eMJNwD9J9_JjJ_fEa147zyfBhD0Q8"
       alt="Distil.io Logo"
       width="120"
       height="auto"
@@ -66,27 +37,3 @@ const html = `
     </p>
   </div>
 </div>
-
-`;
-
-    
- await transporter.sendMail({
-  from: process.env.SMTP_FROM,
-  to,
-  subject: 'Distil.io Bildirim - Yeni Güncellemeler',
-  html,
-});
-
-
-    return res.json({ ok: true, message: 'Mail gönderildi' }, 200);
-  } catch (err) {
-    error(err);
-    return res.json({ ok: false, error: err.message }, 500);
-  }
-};
-
-
-
-
-
-
