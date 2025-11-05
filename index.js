@@ -39,7 +39,7 @@ module.exports = async (context) => {
     />
     <h2 style="margin:0;font-size:20px;color:#111827;">Yeni Değişiklikler</h2>
     <p style="margin:8px 0 0;color:#1e40af;font-size:14px;">
-      Son sürüm güncellemeleri aşağıda listelenmiştir.
+      Son güncellemeler aşağıda listelenmiştir.
     </p>
   </div>
 
@@ -220,6 +220,7 @@ module.exports = async (context) => {
         return res.json({ ok: false, error: err.message }, 500);
     }
 };
+
 
 
 
