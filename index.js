@@ -31,7 +31,7 @@ module.exports = async (context) => {
   <!-- Üst kısım: Logo ve başlık -->
   <div style="background-color:#f9fafb;padding:24px 24px 16px 24px;text-align:center;border-bottom:1px solid #e5e7eb;">
     <img
-      src="https://fra.cloud.appwrite.io/v1/storage/buckets/690b1fec0002a415b38e/files/690b1ff6001cd59ccb06/view?project=6909b793000a48fd66d8&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjkwYjIwMWIxZGViZjZiZTNmNjYiLCJyZXNvdXJjZUlkIjoiNjkwYjFmZWMwMDAyYTQxNWIzOGU6NjkwYjFmZjYwMDFjZDU5Y2NiMDYiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjQ3NjQyOjEiLCJpYXQiOjE3NjIzMzY4NDB9.gkei-kQm1TYkNwIWEldP1pOVPHlNhRgX56XOuGKgeE0"
+      src="https://fra.cloud.appwrite.io/v1/storage/buckets/690b1fec0002a415b38e/files/690b1ff6001cd59ccb06/view?project=6909b793000a48fd66d8&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjkwYjIwMWIxZGViZjZiZTNmNjYiLCJyZXNvdXJjZUlkIjoiNjkwYjFmZWMwMDAyYTQxNWIzOGU6NjkwYjFmZjYwMDFjZDU5Y2NiMDYiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjQ3NjQyOjEiLCJpYXQiOjE3NjIzMzcwOTd9.z7QCzW2BBJL2oQPrzAzjXQ0HDj0vQ1mEUTv_cB6SgTE"
       alt="Distil.io Logo"
       width="120"
       height="auto"
@@ -220,6 +220,7 @@ module.exports = async (context) => {
         return res.json({ ok: false, error: err.message }, 500);
     }
 };
+
 
 
 
