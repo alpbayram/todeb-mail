@@ -16,7 +16,11 @@ module.exports = async (context) => {
             body.message ||
             body.text ||
             JSON.stringify(body, null, 2);
-
+        const html3 = body.html;
+        const added = body.added;
+        const removed= body.removed;
+        const changed = body.changed;
+        
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: Number(process.env.SMTP_PORT || 587),
@@ -210,7 +214,7 @@ module.exports = async (context) => {
             from: process.env.SMTP_FROM,
             to,
             subject: 'Distil.io Bildirim - Yeni Güncellemeler',
-            html: html2
+            html: html3
         });
 
 
@@ -220,3 +224,4 @@ module.exports = async (context) => {
         return res.json({ ok: false, error: err.message }, 500);
     }
 };
+
