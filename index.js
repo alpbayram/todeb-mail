@@ -10,7 +10,7 @@ module.exports = async (context) => {
         const body = req.body || {};
 
         // JSON'dan gelecek alanlar (boşsa env'dekilere düşüyor)
-        const to = body.to || process.env.SMTP_TO || process.env.SMTP_FROM;
+        const to =  process.env.SMTP_TO || process.env.SMTP_FROM;
         const subject = body.subject || 'Webhook mail';
         const text =
             body.message ||
@@ -224,4 +224,5 @@ module.exports = async (context) => {
         return res.json({ ok: false, error: err.message }, 500);
     }
 };
+
 
