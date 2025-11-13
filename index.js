@@ -146,7 +146,7 @@ module.exports = async (context) => {
                       style="border:1px solid #d4d4d4;padding:12px;font-size:14px;color:#405464;"
                     >
                       ${body.newChanges ||
-                      "Yeni değişiklik metni burada yer alacak."}
+            "Yeni değişiklik metni burada yer alacak."}
                     </td>
                   </tr>
                 </table>
@@ -172,7 +172,7 @@ module.exports = async (context) => {
                       style="border:1px solid #d4d4d4;padding:12px;font-size:14px;color:#405464;"
                     >
                       ${body.oldState ||
-                      "Önceki hali burada yer alacak."}
+            "Önceki hali burada yer alacak."}
                     </td>
                   </tr>
                 </table>
@@ -200,7 +200,7 @@ module.exports = async (context) => {
 </html>
 
 `;
-
+        
 
 
 
@@ -220,20 +220,3 @@ module.exports = async (context) => {
         return res.json({ ok: false, error: err.message }, 500);
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
