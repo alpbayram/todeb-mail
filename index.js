@@ -214,7 +214,7 @@ function renderTcmbTemplate({ meta, added, removed, changed }) {
                 </p>
                 ${
                   metaName
-                    ? `<p style="margin:6px 0 0 0;font-size:13px;color:#111111;">
+                    ? `<p style="margin:4px;font-size:13px;color:#111111;padding:4px">
                         ${metaName}
                       </p>`
                     : ''
@@ -452,4 +452,5 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
 
