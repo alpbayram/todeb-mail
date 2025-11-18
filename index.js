@@ -35,13 +35,13 @@ function buildAddedRows(added) {
       const yetkiler = (item.yetkiler || []).join(', ') || '-';
       return `
         <tr>
-          <td style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${item.kurulus_kodu}
           </td>
-          <td style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${item.kurulus_adi}
           </td>
-          <td style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${yetkiler}
           </td>
         </tr>
@@ -66,13 +66,13 @@ function buildRemovedRows(removed) {
       const yetkiler = (item.yetkiler || []).join(', ') || '-';
       return `
         <tr>
-          <td style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${item.kurulus_kodu}
           </td>
-          <td style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${item.kurulus_adi}
           </td>
-          <td style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${yetkiler}
           </td>
         </tr>
@@ -99,14 +99,14 @@ function buildChangedRows(changed) {
 
       return `
         <tr>
-          <td style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;vertical-align:top;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
             ${item.kurulus_kodu}
           </td>
-          <td style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;vertical-align:top;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
             <div><strong>Önceki:</strong> ${item.kurulus_adi_eski || '-'}</div>
             <div style="margin-top:4px;"><strong>Yeni:</strong> ${item.kurulus_adi}</div>
           </td>
-          <td style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;vertical-align:top;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
             <div><strong>Önceki:</strong> ${eskiYetkiler}</div>
             <div style="margin-top:4px;"><strong>Yeni:</strong> ${yeniYetkiler}</div>
           </td>
@@ -120,14 +120,43 @@ function buildChangedRows(changed) {
 }
 
 // -------------------------
-// HTML Template (senin verdiğine göre)
+// Template Router
 // -------------------------
-function renderTemplate({ meta, added, removed, changed }) {
+//
+// Buraya Distill ID'lerine göre template seçimini koyacaksın.
+// Şimdilik tek template var: renderTcmbTemplate
+//
+function renderTemplate(payload) {
+  const meta = payload.meta || {};
+  const id = meta.id;
+
+  switch (id) {
+    // ÖRNEK:
+    // case "e3bc3dd2-c44d-11f0-b1ac-73f035e7ef88":
+    //   return renderTcmbTemplate(payload);
+
+    // Yeni site/template geldiğinde:
+    // case "BAŞKA_DISTILL_ID":
+    //   return renderBaskaTemplate(payload);
+
+    default:
+      // Şimdilik tüm siteler için ana template
+      return renderTcmbTemplate(payload);
+  }
+}
+
+// -------------------------
+// TCMB / Default Template
+// -------------------------
+function renderTcmbTemplate({ meta, added, removed, changed }) {
   const today = new Date().toLocaleDateString('tr-TR');
 
   const addedRows = buildAddedRows(added);
   const removedRows = buildRemovedRows(removed);
   const changedRows = buildChangedRows(changed);
+
+  const metaName = meta?.name || '';
+  const metaUri = meta?.uri || '';
 
   return `<!DOCTYPE html>
 <html>
@@ -153,7 +182,7 @@ function renderTemplate({ meta, added, removed, changed }) {
             cellpadding="0"
             cellspacing="0"
             border="0"
-            style="width:600px;max-width:600px;border:1px solid #d4d4d4;background-color:#ffffff;"
+            style="width:600px;max-width:600px;border:2px solid #b0b0b0;background-color:#ffffff;"
           >
             <!-- Header -->
             <tr>
@@ -185,6 +214,22 @@ function renderTemplate({ meta, added, removed, changed }) {
                 >
                   Son güncellemeler aşağıda listelenmiştir.
                 </p>
+                ${
+                  metaName
+                    ? `<p style="margin:6px 0 0 0;font-size:13px;color:#111111;">
+                        ${metaName}
+                      </p>`
+                    : ''
+                }
+                ${
+                  metaUri
+                    ? `<p style="margin:4px 0 0 0;font-size:12px;">
+                        <a href="${metaUri}" style="color:#1d4ed8;text-decoration:underline;">
+                          Siteye gitmek için tıklayınız
+                        </a>
+                      </p>`
+                    : ''
+                }
               </td>
             </tr>
 
@@ -204,7 +249,7 @@ function renderTemplate({ meta, added, removed, changed }) {
                   </tr>
                   <tr>
                     <td
-                      style="border:1px solid #d4d4d4;padding:0;font-size:14px;color:#405464;"
+                      style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;"
                     >
                       <table
                         width="100%"
@@ -217,19 +262,19 @@ function renderTemplate({ meta, added, removed, changed }) {
                           <tr>
                             <th
                               align="left"
-                              style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
+                              style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
                             >
                               Kuruluş Kodu
                             </th>
                             <th
                               align="left"
-                              style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
+                              style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
                             >
                               Kuruluş Adı
                             </th>
                             <th
                               align="left"
-                              style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
+                              style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
                             >
                               Yetkileri
                             </th>
@@ -258,7 +303,7 @@ function renderTemplate({ meta, added, removed, changed }) {
                   </tr>
                   <tr>
                     <td
-                      style="border:1px solid #d4d4d4;padding:0;font-size:14px;color:#405464;"
+                      style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;"
                     >
                       <table
                         width="100%"
@@ -271,19 +316,19 @@ function renderTemplate({ meta, added, removed, changed }) {
                           <tr>
                             <th
                               align="left"
-                              style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
+                              style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
                             >
                               Kuruluş Kodu
                             </th>
                             <th
                               align="left"
-                              style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
+                              style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
                             >
                               Kuruluş Adı
                             </th>
                             <th
                               align="left"
-                              style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
+                              style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
                             >
                               Yetkileri
                             </th>
@@ -312,7 +357,7 @@ function renderTemplate({ meta, added, removed, changed }) {
                   </tr>
                   <tr>
                     <td
-                      style="border:1px solid #d4d4d4;padding:0;font-size:14px;color:#405464;"
+                      style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;"
                     >
                       <table
                         width="100%"
@@ -325,19 +370,19 @@ function renderTemplate({ meta, added, removed, changed }) {
                           <tr>
                             <th
                               align="left"
-                              style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
+                              style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
                             >
                               Kuruluş Kodu
                             </th>
                             <th
                               align="left"
-                              style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
+                              style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
                             >
                               Kuruluş Adı
                             </th>
                             <th
                               align="left"
-                              style="padding:8px;border-bottom:1px solid #d4d4d4;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
+                              style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#f5f5f5;"
                             >
                               Yetkileri
                             </th>
