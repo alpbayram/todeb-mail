@@ -99,25 +99,23 @@ function buildChangedRows(changed) {
 
       return `
         <tr>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:middle;">
             ${item.kurulus_kodu}
           </td>
           <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
-            <div><strong>Önceki:</strong> ${item.kurulus_adi_eski || '-'}</div>
-            <div style="margin-top:4px;"><strong>Yeni:</strong> ${item.kurulus_adi}</div>
+            <div>${item.kurulus_adi_eski || '-'}</div>
+            <div style="margin-top:4px;">${item.kurulus_adi}</div>
           </td>
           <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
-            <div><strong>Önceki:</strong> ${eskiYetkiler}</div>
-            <div style="margin-top:4px;"><strong>Yeni:</strong> ${yeniYetkiler}</div>
+            <div>${eskiYetkiler}</div>
+            <div style="margin-top:4px;">${yeniYetkiler}</div>
           </td>
-        </tr>
-        <tr>
-          <td colspan="3" style="height:8px;font-size:0;line-height:0;">&nbsp;</td>
         </tr>
       `;
     })
     .join('');
 }
+
 
 // -------------------------
 // Template Router
@@ -454,3 +452,4 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
