@@ -1,199 +1,132 @@
 const nodemailer = require('nodemailer');
 
-module.exports = async (context) => {
-    const { req, res, log, error } = context;
+// -------------------------
+// Yardımcı: SMTP transporter
+// -------------------------
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
+}
 
-    try {
-        log('Function started');
+// -------------------------
+// Yardımcı: HTML template seçici
+// (ileride meta.id'ye göre switch ekleyebilirsin)
+// -------------------------
+function renderTemplate({ meta, added, removed, changed }) {
+  // Şimdilik tek template, meta.id ile case açmaya hazır
+  return renderDefaultTemplate({ meta, added, removed, changed });
+}
 
-        // Webhook'tan gelen JSON
-        const body = req.body || {};
+// Basit yardımcı: liste section'ı
+function renderListSection(title, items, renderItemHtml) {
+  if (!items || items.length === 0) {
+    return `
+      <h3 style="margin:16px 0 4px 0;font-size:16px;color:#111827;">${title}</h3>
+      <p style="margin:0 0 8px 0;font-size:13px;color:#6b7280;">Kayıt bulunamadı.</p>
+    `;
+  }
 
-        // JSON'dan gelecek alanlar (boşsa env'dekilere düşüyor)
-        const to =  process.env.SMTP_TO || process.env.SMTP_FROM;
-        const subject = body.subject || 'Webhook mail';
-        const text =
-            body.message ||
-            body.text ||
-            JSON.stringify(body, null, 2);
-        const html3 = body.html;
-        const added = body.added;
-        const removed= body.removed;
-        const changed = body.changed;
-        
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT || 587),
-            secure: process.env.SMTP_SECURE === 'true',
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-        });
-        const html = `
- <div style="font-family:'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;">
-  <!-- Üst kısım: Logo ve başlık -->
-  <div style="background-color:#f9fafb;padding:24px 24px 16px 24px;text-align:center;border-bottom:1px solid #e5e7eb;">
-    <img
-      src="https://fra.cloud.appwrite.io/v1/storage/buckets/690b1fec0002a415b38e/files/690b1ff6001cd59ccb06/view?project=6909b793000a48fd66d8&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjkwYjIwMWIxZGViZjZiZTNmNjYiLCJyZXNvdXJjZUlkIjoiNjkwYjFmZWMwMDAyYTQxNWIzOGU6NjkwYjFmZjYwMDFjZDU5Y2NiMDYiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjQ3NjQyOjEiLCJpYXQiOjE3NjIzMzcwOTd9.z7QCzW2BBJL2oQPrzAzjXQ0HDj0vQ1mEUTv_cB6SgTE"
-      alt="Distil.io Logo"
-      width="120"
-      height="auto"
-      style="display:block;margin:0 auto 12px auto;"
-    />
-    <h2 style="margin:0;font-size:20px;color:#111827;">Yeni Değişiklikler</h2>
-    <p style="margin:8px 0 0;color:#1e40af;font-size:14px;">
-      Son güncellemeler aşağıda listelenmiştir.
-    </p>
-  </div>
+  return `
+    <h3 style="margin:16px 0 4px 0;font-size:16px;color:#111827;">${title} (${items.length})</h3>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-bottom:8px;">
+      <tbody>
+        ${items.map(renderItemHtml).join('')}
+      </tbody>
+    </table>
+  `;
+}
 
-  <!-- Yeni değişiklikler -->
-  <div style="background-color:#f0f9ff;padding:20px 24px;border-bottom:1px solid #e5e7eb;">
-    <h3 style="margin:0;color:#0c4a6e;font-size:16px;">Yeni</h3>
-    <div style="background:#e0f2fe;border:1px solid #bae6fd;padding:12px;margin-top:8px;border-radius:6px;color:#0c4a6e;font-size:14px;">
-      ${body.newChanges || "Yeni değişiklik metni burada yer alacak."}
-    </div>
-  </div>
+// Default / TCMB template
+function renderDefaultTemplate({ meta, added, removed, changed }) {
+  const title = meta?.name || 'WebWatcher Güncelleme Raporu';
+  const uri = meta?.uri || '';
 
-  <!-- Eski hali -->
-  <div style="background-color:#ffffff;padding:20px 24px;">
-    <h3 style="margin:0;color:#374151;font-size:16px;">Önceki Hali</h3>
-    <div style="background:#f9fafb;border:1px solid #e5e7eb;padding:12px;margin-top:8px;border-radius:6px;color:#4b5563;font-size:14px;">
-      ${body.oldState || "Önceki hali burada yer alacak."}
-    </div>
-  </div>
+  const addedHtml = renderListSection('Yeni Eklenenler', added, item => `
+    <tr>
+      <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:13px;">
+        <strong>${item.kurulus_kodu}</strong>
+      </td>
+      <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:13px;">
+        ${item.kurulus_adi}
+      </td>
+    </tr>
+  `);
 
-  <!-- Footer -->
-  <div style="background-color:#f9fafb;text-align:center;padding:14px;border-top:1px solid #e5e7eb;">
-    <p style="margin:0;font-size:12px;color:#9ca3af;">
-      Distil.io Otomatik Bildirim • ${new Date().toLocaleDateString("tr-TR")}
-    </p>
-  </div>
-</div>
+  const removedHtml = renderListSection('Silinenler', removed, item => `
+    <tr>
+      <td style="border:1px solid #fee2e2;padding:6px 8px;font-size:13px;color:#991b1b;">
+        <strong>${item.kurulus_kodu}</strong>
+      </td>
+      <td style="border:1px solid #fee2e2;padding:6px 8px;font-size:13px;color:#991b1b;">
+        ${item.kurulus_adi}
+      </td>
+    </tr>
+  `);
 
-`;
-        const html2 = `<!DOCTYPE html>
+  const changedHtml = renderListSection('Değişenler', changed, item => `
+    <tr>
+      <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:13px;vertical-align:top;">
+        <strong>${item.kurulus_kodu}</strong>
+      </td>
+      <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:13px;vertical-align:top;">
+        <div>
+          <div style="font-size:13px;"><strong>Eski Ad:</strong> ${item.kurulus_adi_eski || '-'}</div>
+          <div style="font-size:13px;"><strong>Yeni Ad:</strong> ${item.kurulus_adi}</div>
+          <div style="font-size:13px;margin-top:4px;">
+            <strong>Eski Yetkiler:</strong> ${(item.yetkiler_eski || []).join(', ') || '-'}
+          </div>
+          <div style="font-size:13px;">
+            <strong>Yeni Yetkiler:</strong> ${(item.yetkiler || []).join(', ') || '-'}
+          </div>
+        </div>
+      </td>
+    </tr>
+  `);
+
+  const today = new Date().toLocaleDateString('tr-TR');
+
+  return `
+<!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yeni Değişiklikler</title>
+    <meta charset="utf-8" />
+    <title>${title}</title>
   </head>
-  <body
-    style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;"
-  >
-    <table
-      width="100%"
-      cellpadding="0"
-      cellspacing="0"
-      border="0"
-      style="background-color:#ffffff;"
-    >
+  <body style="margin:0;padding:0;background-color:#f3f4f6;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
-        <td align="center">
-          <table
-            width="600"
-            cellpadding="0"
-            cellspacing="0"
-            border="0"
-            style="width:600px;max-width:600px;border:1px solid #d4d4d4;background-color:#ffffff;"
-          >
+        <td align="center" style="padding:16px 8px;">
+          <table width="640" cellpadding="0" cellspacing="0" border="0" style="width:640px;max-width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
             <!-- Header -->
             <tr>
-              <td
-                align="center"
-                style="background-color:#d4d4d4;padding:16px 0 12px 0;"
-              >
-                <img
-                  src="https://raw.githubusercontent.com/alpbayram/todeb-mail/refs/heads/main/TODEB_Logo.png"
-                  alt="Distil.io Logo"
-                  width="280"
-                  height="auto"
-                  style="display:block;border:none;outline:none;text-decoration:none;"
-                />
+              <td style="padding:16px 20px 12px 20px;background-color:#111827;color:#f9fafb;">
+                <h1 style="margin:0;font-size:18px;">${title}</h1>
+                ${uri ? `<p style="margin:4px 0 0 0;font-size:12px;">
+                  <a href="${uri}" style="color:#93c5fd;text-decoration:none;">Sayfayı açmak için tıklayın</a>
+                </p>` : ''}
               </td>
             </tr>
+
+            <!-- Body -->
             <tr>
-              <td
-                align="center"
-                style="background-color:#d4d4d4;padding:8px 24px 12px 24px;"
-              >
-                <h1
-                  style="margin:0;font-size:24px;font-weight:bold;color:#000000;"
-                >
-                  Yeni Değişiklikler
-                </h1>
-                <p
-                  style="margin:8px 0 0 0;font-size:14px;color:#333333;font-weight:bold;"
-                >
-                  Son güncellemeler aşağıda listelenmiştir.
-                </p>
+              <td style="padding:16px 20px 20px 20px;font-size:14px;color:#111827;">
+                ${addedHtml}
+                ${removedHtml}
+                ${changedHtml}
               </td>
             </tr>
-
-            <!-- Spacer -->
-            <tr><td height="32" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-
-            <!-- Yeni Değişiklikler -->
-            <tr>
-              <td style="padding:16px 24px;">
-                <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td
-                      style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;"
-                    >
-                      Yeni
-                    </td>
-                  </tr>
-                  <tr>
-                    <td
-                      style="border:1px solid #d4d4d4;padding:12px;font-size:14px;color:#405464;"
-                    >
-                      ${body.newChanges ||
-            "Yeni değişiklik metni burada yer alacak."}
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <!-- Spacer -->
-            <tr><td height="0" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-
-            <!-- Önceki Hali -->
-            <tr>
-              <td style="padding:16px 24px;">
-                <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td
-                      style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;"
-                    >
-                      Önceki Hali
-                    </td>
-                  </tr>
-                  <tr>
-                    <td
-                      style="border:1px solid #d4d4d4;padding:12px;font-size:14px;color:#405464;"
-                    >
-                      ${body.oldState ||
-            "Önceki hali burada yer alacak."}
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <!-- Spacer -->
-            <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
 
             <!-- Footer -->
             <tr>
-              <td
-                align="center"
-                style="background-color:#f0f0f0;padding:12px;font-size:12px;color:#666666;"
-              >
-                Distil.io Otomatik Bildirim •
-                ${new Date().toLocaleDateString("tr-TR")}
+              <td style="padding:10px 16px;background-color:#f9fafb;font-size:11px;color:#6b7280;text-align:center;border-top:1px solid #e5e7eb;">
+                Distil.io / WebWatcher Otomatik Bildirim • ${today}
               </td>
             </tr>
           </table>
@@ -202,27 +135,49 @@ module.exports = async (context) => {
     </table>
   </body>
 </html>
+  `;
+}
 
-`;
-        
+// -------------------------
+// Ana handler
+// -------------------------
+module.exports = async (context) => {
+  const { req, res, log, error } = context;
 
+  try {
+    log('Mail function started');
 
+    const rawBody = req.body || {};
+    const body = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
 
+    const to = body.to || process.env.SMTP_TO || process.env.SMTP_FROM;
+    const subject = body.subject || 'WebWatcher Güncelleme Raporu';
 
+    const meta = body.meta || {};
+    const added = body.added || [];
+    const removed = body.removed || [];
+    const changed = body.changed || [];
 
-        await transporter.sendMail({
-            from: process.env.SMTP_FROM,
-            to,
-            subject: 'Distil.io Bildirim - Yeni Güncellemeler',
-            html: html3
-        });
+    const html = renderTemplate({ meta, added, removed, changed });
 
+    const transporter = createTransporter();
 
-        return res.json({ ok: true, message: 'Mail gönderildi' }, 200);
-    } catch (err) {
-        error(err);
-        return res.json({ ok: false, error: err.message }, 500);
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM,
+      to,
+      subject,
+      html
+    });
+
+    log('Mail sent successfully');
+
+    return res.json({ ok: true, message: 'Mail gönderildi' }, 200);
+  } catch (err) {
+    if (error) {
+      error(err);
+    } else {
+      console.error(err);
     }
+    return res.json({ ok: false, error: err.message }, 500);
+  }
 };
-
-
