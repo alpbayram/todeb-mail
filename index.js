@@ -155,7 +155,7 @@ function renderTcmbTemplate({ meta, added, removed, changed }) {
 
   const metaName = meta?.name || '';
   const metaUri = meta?.uri || '';
-  const metaTs = meta?.ts || '';
+  const metaTrDate = meta?.trDate || '';
 
   return `<!DOCTYPE html>
 <html>
@@ -517,7 +517,7 @@ function renderTcmbTemplate({ meta, added, removed, changed }) {
 									color: #666666;
 								"
 							>
-								${metaTs}
+								${metaTrDate}
 							</td>
 						</tr>
 					</table>
@@ -567,5 +567,6 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
 
 
