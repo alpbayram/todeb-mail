@@ -318,6 +318,7 @@ function renderTcmbTemplate({ meta, added, removed, changed }) {
 																font-weight: bold;
 																background-color: #42525e;
 																color: white;
+																width: 100px;
 															"
 														>
 															Yetkileri
@@ -404,6 +405,7 @@ function renderTcmbTemplate({ meta, added, removed, changed }) {
 																font-weight: bold;
 																background-color: #42525e;
 																color: white;
+																width: 100px;
 															"
 														>
 															Yetkileri
@@ -490,6 +492,7 @@ function renderTcmbTemplate({ meta, added, removed, changed }) {
 																font-weight: bold;
 																background-color: #42525e;
 																color: white;
+																width: 100px;
 															"
 														>
 															Yetkileri
@@ -567,6 +570,7 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
 
 
 
