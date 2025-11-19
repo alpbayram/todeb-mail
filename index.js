@@ -35,13 +35,13 @@ function buildAddedRows(added) {
       const yetkiler = (item.yetkiler || []).join(', ') || '-';
       return `
         <tr>
-          <td style="padding:8px;border-bottom:1px solid #42525e;font-size:13px;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${item.kurulus_kodu}
           </td>
-          <td style="padding:8px;border-bottom:1px solid #42525e;font-size:13px;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${item.kurulus_adi}
           </td>
-          <td style="padding:8px;border-bottom:1px solid #42525e;font-size:13px;">
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${yetkiler}
           </td>
         </tr>
@@ -452,7 +452,5 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
-
-
 
 
