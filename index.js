@@ -514,7 +514,7 @@ function renderTcmbTemplate({ meta, added, removed, changed }) {
 									background-color: #f0f0f0;
 									padding: 12px;
 									font-size: 12px;
-									color: #666666;
+									color: #000000;
 								"
 							>
 								${metaTrDate}
@@ -567,6 +567,7 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
 
 
 
