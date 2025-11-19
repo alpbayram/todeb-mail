@@ -544,7 +544,7 @@ module.exports = async (context) => {
     const body = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
 
     const to = body.to || process.env.SMTP_TO || process.env.SMTP_FROM;
-    const subject = body.subject || 'WebWatcher Güncelleme Raporu';
+    const subject = body.subject || 'Güncelleme Raporu';
 
     const meta = body.meta || {};
     const added = body.added || [];
@@ -570,6 +570,7 @@ module.exports = async (context) => {
     return res.json({ ok: false, error: err.message }, 500);
   }
 };
+
 
 
 
