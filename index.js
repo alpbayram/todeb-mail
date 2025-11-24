@@ -323,7 +323,7 @@ const MAIL_WATCHERS = {
 				}
 
 				return `
-        <ul style="margin:-8px;padding:0 0 0 16px;font-size:13px;color:#111827;line-height:1.6;margin-left:0px">
+        <ul style="margin:-8px;padding:0 0 0 16px;font-size:13px;color:#111827;line-height:1.6;">
           ${list.map(item => {
 					const title = item.title || item.dokuman_adi || item.name || "-";
 					return `<li style="margin:0 0 6px 0;">${title}</li>`;
