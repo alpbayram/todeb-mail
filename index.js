@@ -4,15 +4,15 @@ const nodemailer = require('nodemailer');
 // SMTP transporter
 // -------------------------
 function createTransporter() {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
+	return nodemailer.createTransport({
+		host: process.env.SMTP_HOST,
+		port: Number(process.env.SMTP_PORT || 587),
+		secure: process.env.SMTP_SECURE === 'true',
+		auth: {
+			user: process.env.SMTP_USER,
+			pass: process.env.SMTP_PASS
+		}
+	});
 }
 
 // -------------------------
@@ -20,20 +20,20 @@ function createTransporter() {
 // -------------------------
 
 function buildAddedRows(added) {
-  if (!added || added.length === 0) {
-    return `
+	if (!added || added.length === 0) {
+		return `
       <tr>
         <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
           Kayıt bulunamadı.
         </td>
       </tr>
     `;
-  }
+	}
 
-  return added
-    .map(item => {
-      const yetkiler = (item.yetkiler || []).join(', ') || '-';
-      return `
+	return added
+		.map(item => {
+			const yetkiler = (item.yetkiler || []).join(', ') || '-';
+			return `
         <tr>
           <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${item.kurulus_kodu}
@@ -46,25 +46,25 @@ function buildAddedRows(added) {
           </td>
         </tr>
       `;
-    })
-    .join('');
+		})
+		.join('');
 }
 
 function buildRemovedRows(removed) {
-  if (!removed || removed.length === 0) {
-    return `
+	if (!removed || removed.length === 0) {
+		return `
       <tr>
         <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
           Kayıt bulunamadı.
         </td>
       </tr>
     `;
-  }
+	}
 
-  return removed
-    .map(item => {
-      const yetkiler = (item.yetkiler || []).join(', ') || '-';
-      return `
+	return removed
+		.map(item => {
+			const yetkiler = (item.yetkiler || []).join(', ') || '-';
+			return `
         <tr>
           <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
             ${item.kurulus_kodu}
@@ -77,27 +77,27 @@ function buildRemovedRows(removed) {
           </td>
         </tr>
       `;
-    })
-    .join('');
+		})
+		.join('');
 }
 
 function buildChangedRows(changed) {
-  if (!changed || changed.length === 0) {
-    return `
+	if (!changed || changed.length === 0) {
+		return `
       <tr>
         <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
           Kayıt bulunamadı.
         </td>
       </tr>
     `;
-  }
+	}
 
-  return changed
-    .map(item => {
-      const eskiYetkiler = (item.yetkiler_eski || []).join(', ') || '-';
-      const yeniYetkiler = (item.yetkiler || []).join(', ') || '-';
+	return changed
+		.map(item => {
+			const eskiYetkiler = (item.yetkiler_eski || []).join(', ') || '-';
+			const yeniYetkiler = (item.yetkiler || []).join(', ') || '-';
 
-      return `
+			return `
         <tr>
           <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:middle;">
             ${item.kurulus_kodu}
@@ -112,8 +112,8 @@ function buildChangedRows(changed) {
           </td>
         </tr>
       `;
-    })
-    .join('');
+		})
+		.join('');
 }
 
 
@@ -125,39 +125,39 @@ function buildChangedRows(changed) {
 // Şimdilik tek template var: renderTcmbTemplate
 //
 function renderTemplate(payload) {
-  const meta = payload.meta || {};
-  const id = meta.id;
+	const meta = payload.meta || {};
+	const id = meta.id;
 
-  switch (id) {
-    // ÖRNEK:
-    // case "e3bc3dd2-c44d-11f0-b1ac-73f035e7ef88":
-    //   return renderTcmbTemplate(payload);
+	switch (id) {
+		// ÖRNEK:
+		// case "e3bc3dd2-c44d-11f0-b1ac-73f035e7ef88":
+		//   return renderTcmbTemplate(payload);
 
-    // Yeni site/template geldiğinde:
-    // case "BAŞKA_DISTILL_ID":
-    //   return renderBaskaTemplate(payload);
+		// Yeni site/template geldiğinde:
+		// case "BAŞKA_DISTILL_ID":
+		//   return renderBaskaTemplate(payload);
 
-    default:
-      // Şimdilik tüm siteler için ana template
-      return renderTcmbTemplate(payload);
-  }
+		default:
+			// Şimdilik tüm siteler için ana template
+			return renderTcmbTemplate(payload);
+	}
 }
 
 // -------------------------
 // TCMB / Default Template
 // -------------------------
 function renderTcmbTemplate({ meta, added, removed, changed }) {
-  const today = new Date().toLocaleDateString('tr-TR');
+	const today = new Date().toLocaleDateString('tr-TR');
 
-  const addedRows = buildAddedRows(added);
-  const removedRows = buildRemovedRows(removed);
-  const changedRows = buildChangedRows(changed);
+	const addedRows = buildAddedRows(added);
+	const removedRows = buildRemovedRows(removed);
+	const changedRows = buildChangedRows(changed);
 
-  const metaName = meta?.name || '';
-  const metaUri = meta?.uri || '';
-  const metaTrDate = meta?.trDate || '';
+	const metaName = meta?.name || '';
+	const metaUri = meta?.uri || '';
+	const metaTrDate = meta?.trDate || '';
 
-  return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -535,40 +535,40 @@ function renderTcmbTemplate({ meta, added, removed, changed }) {
 // Ana handler
 // -------------------------
 module.exports = async (context) => {
-  const { req, res, log, error } = context;
+	const { req, res, log, error } = context;
 
-  try {
-    log('Mail function started');
+	try {
+		log('Mail function started');
 
-    const rawBody = req.body || {};
-    const body = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+		const rawBody = req.body || {};
+		const body = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
 
-    const to = body.to || process.env.SMTP_TO || process.env.SMTP_FROM;
-    const subject = body.subject || 'Güncelleme Raporu';
+		const to = body.to || process.env.SMTP_TO || process.env.SMTP_FROM;
+		const subject = body.subject || 'Güncelleme Raporu';
 
-    const meta = body.meta || {};
-    const added = body.added || [];
-    const removed = body.removed || [];
-    const changed = body.changed || [];
+		const meta = body.meta || {};
+		const added = body.added || [];
+		const removed = body.removed || [];
+		const changed = body.changed || [];
 
-    const html = renderTemplate({ meta, added, removed, changed });
+		const html = renderTemplate({ meta, added, removed, changed });
 
-    const transporter = createTransporter();
+		const transporter = createTransporter();
 
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to,
-      subject,
-      html
-    });
+		await transporter.sendMail({
+			from: process.env.SMTP_FROM,
+			to,
+			subject,
+			html
+		});
 
-    log('Mail sent successfully');
+		log('Mail sent successfully');
 
-    return res.json({ ok: true, message: 'Mail gönderildi' }, 200);
-  } catch (err) {
-    if (error) error(err);
-    return res.json({ ok: false, error: err.message }, 500);
-  }
+		return res.json({ ok: true, message: 'Mail gönderildi' }, 200);
+	} catch (err) {
+		if (error) error(err);
+		return res.json({ ok: false, error: err.message }, 500);
+	}
 };
 
 
