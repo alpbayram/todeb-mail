@@ -307,39 +307,39 @@ const MAIL_WATCHERS = {
 	// Örnek: Duyuru listesi (sadece title)
 	// ------------------------------------------------
 	// ------------------------------------------------
-// Dökümanlar Listesi Mail Watcher (title-only)
-// Tasarım: TCMB ile aynı, içerik: tablo yok, liste var
-// ------------------------------------------------
-"tcmb_odeme_sistemleri_ile_ilgili_mevzuat": {
-  render({ meta, added, removed }) {
+	// Dökümanlar Listesi Mail Watcher (title-only)
+	// Tasarım: TCMB ile aynı, içerik: tablo yok, liste var
+	// ------------------------------------------------
+	"tcmb_odeme_sistemleri_ile_ilgili_mevzuat": {
+		render({ meta, added, removed }) {
 
-    function renderDocList(list) {
-      if (!list || list.length === 0) {
-        return `
+			function renderDocList(list) {
+				if (!list || list.length === 0) {
+					return `
           <p style="margin:0;padding:8px;font-size:13px;color:#777777;">
             Kayıt bulunamadı.
           </p>
         `;
-      }
+				}
 
-      return `
-        <ul style="margin:0;padding:0 0 0 18px;font-size:13px;color:#111827;line-height:1.6;">
+				return `
+        <ul style="margin:0;padding:0 0 0 12px;font-size:13px;color:#111827;line-height:1.6;">
           ${list.map(item => {
-            const title = item.title || item.dokuman_adi || item.name || "-";
-            return `<li style="margin:0 0 6px 0;">${title}</li>`;
-          }).join("")}
+					const title = item.title || item.dokuman_adi || item.name || "-";
+					return `<li style="margin:0 0 6px 0;">${title}</li>`;
+				}).join("")}
         </ul>
       `;
-    }
+			}
 
-    const metaName = meta?.name || "";
-    const metaUri = meta?.uri || "";
-    const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+			const metaName = meta?.name || "";
+			const metaUri = meta?.uri || "";
+			const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
 
-    const addedList = renderDocList(added);
-    const removedList = renderDocList(removed);
+			const addedList = renderDocList(added);
+			const removedList = renderDocList(removed);
 
-    return `<!DOCTYPE html>
+			return `<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -371,7 +371,7 @@ const MAIL_WATCHERS = {
               <td align="center" style="background-color:#d4d4d4;padding:8px 24px 12px 24px;">
                 ${metaName ? `
                   <p style="margin:0;font-size:24px;font-weight:bold;color:#000000;">
-                    ${metaName}
+                    ${metaName} - Dökümanlar
                   </p>
                 ` : ""}
 
@@ -386,15 +386,6 @@ const MAIL_WATCHERS = {
             </tr>
 
             <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-
-            <!-- DÖKÜMANLAR (ANA BAŞLIK) -->
-            <tr>
-              <td style="padding:0 24px 8px 24px;">
-                <p style="margin:0;font-size:18px;font-weight:bold;color:#000000;">
-                  Dökümanlar
-                </p>
-              </td>
-            </tr>
 
             <!-- YENİ EKLENENLER -->
             <tr>
@@ -445,8 +436,8 @@ const MAIL_WATCHERS = {
     </table>
   </body>
 </html>`;
-  }
-},
+		}
+	},
 
 };
 
