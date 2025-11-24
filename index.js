@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 // -------------------------
 // SMTP transporter
@@ -7,7 +7,7 @@ function createTransporter() {
 	return nodemailer.createTransport({
 		host: process.env.SMTP_HOST,
 		port: Number(process.env.SMTP_PORT || 587),
-		secure: process.env.SMTP_SECURE === 'true',
+		secure: process.env.SMTP_SECURE === "true",
 		auth: {
 			user: process.env.SMTP_USER,
 			pass: process.env.SMTP_PASS
@@ -16,519 +16,349 @@ function createTransporter() {
 }
 
 // -------------------------
-// Yardımcı: Satır üreticileri
+// 1) Payload'ı standart formata sok
+// (ÖNCEKİ FUNCTION'DAKİ mapDistillToNewData gibi düşün)
 // -------------------------
-
-function buildAddedRows(added) {
-	if (!added || added.length === 0) {
-		return `
-      <tr>
-        <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
-          Kayıt bulunamadı.
-        </td>
-      </tr>
-    `;
-	}
-
-	return added
-		.map(item => {
-			const yetkiler = (item.yetkiler || []).join(', ') || '-';
-			return `
-        <tr>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${item.kurulus_kodu}
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${item.kurulus_adi}
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${yetkiler}
-          </td>
-        </tr>
-      `;
-		})
-		.join('');
+function normalizePayload(body) {
+	const meta = body.meta || {};
+	return {
+		to: body.to || meta.to || process.env.SMTP_TO || process.env.SMTP_FROM,
+		meta,
+		added: Array.isArray(body.added) ? body.added : [],
+		removed: Array.isArray(body.removed) ? body.removed : [],
+		changed: Array.isArray(body.changed) ? body.changed : []
+	};
 }
 
-function buildRemovedRows(removed) {
-	if (!removed || removed.length === 0) {
-		return `
-      <tr>
-        <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
-          Kayıt bulunamadı.
-        </td>
-      </tr>
-    `;
-	}
+// ====================================================
+//  📌 MAIL WATCHERS (meta.id -> render)
+//  Her watcher kendi helper + html’ini taşır.
+// ====================================================
+const MAIL_WATCHERS = {
+	// ------------------------------------------------
+	// TCMB Ödeme Kuruluşları Tablosu
+	// ------------------------------------------------
+	"tcmb_odeme_kuruluslari": {
+		render({ meta, added, removed, changed }) {
+			// ====== TCMB helper’ları watcher içinde ======
+			function buildAddedRows(list) {
+				if (!list.length) {
+					return `
+            <tr>
+              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+                Kayıt bulunamadı.
+              </td>
+            </tr>
+          `;
+				}
 
-	return removed
-		.map(item => {
-			const yetkiler = (item.yetkiler || []).join(', ') || '-';
-			return `
-        <tr>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${item.kurulus_kodu}
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${item.kurulus_adi}
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${yetkiler}
-          </td>
-        </tr>
-      `;
-		})
-		.join('');
-}
+				return list.map(item => {
+					const yetkiler = (item.yetkiler || []).join(", ") || "-";
+					return `
+            <tr>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_kodu}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_adi}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${yetkiler}
+              </td>
+            </tr>
+          `;
+				}).join("");
+			}
 
-function buildChangedRows(changed) {
-	if (!changed || changed.length === 0) {
-		return `
-      <tr>
-        <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
-          Kayıt bulunamadı.
-        </td>
-      </tr>
-    `;
-	}
+			function buildRemovedRows(list) {
+				if (!list.length) {
+					return `
+            <tr>
+              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+                Kayıt bulunamadı.
+              </td>
+            </tr>
+          `;
+				}
 
-	return changed
-		.map(item => {
-			const eskiYetkiler = (item.yetkiler_eski || []).join(', ') || '-';
-			const yeniYetkiler = (item.yetkiler || []).join(', ') || '-';
+				return list.map(item => {
+					const yetkiler = (item.yetkiler || []).join(", ") || "-";
+					return `
+            <tr>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_kodu}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_adi}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${yetkiler}
+              </td>
+            </tr>
+          `;
+				}).join("");
+			}
 
-			return `
-        <tr>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:middle;">
-            ${item.kurulus_kodu}
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
-            <div>${item.kurulus_adi_eski || '-'}</div>
-            <div style="margin-top:4px;">${item.kurulus_adi}</div>
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
-            <div>${eskiYetkiler}</div>
-            <div style="margin-top:4px;">${yeniYetkiler}</div>
-          </td>
-        </tr>
-      `;
-		})
-		.join('');
-}
+			function buildChangedRows(list) {
+				if (!list.length) {
+					return `
+            <tr>
+              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+                Kayıt bulunamadı.
+              </td>
+            </tr>
+          `;
+				}
 
+				return list.map(item => {
+					const eskiYetkiler = (item.yetkiler_eski || []).join(", ") || "-";
+					const yeniYetkiler = (item.yetkiler || []).join(", ") || "-";
 
-// -------------------------
-// Template Router
-// -------------------------
-//
-// Buraya Distill ID'lerine göre template seçimini koyacaksın.
-// Şimdilik tek template var: renderTcmbTemplate
-//
-function renderTemplate(payload) {
-	const meta = payload.meta || {};
-	const id = meta.id;
+					return `
+            <tr>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:middle;">
+                ${item.kurulus_kodu}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
+                <div>${item.kurulus_adi_eski || "-"}</div>
+                <div style="margin-top:4px;">${item.kurulus_adi}</div>
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
+                <div>${eskiYetkiler}</div>
+                <div style="margin-top:4px;">${yeniYetkiler}</div>
+              </td>
+            </tr>
+          `;
+				}).join("");
+			}
 
-	switch (id) {
-		// ÖRNEK:
-		// case "e3bc3dd2-c44d-11f0-b1ac-73f035e7ef88":
-		//   return renderTcmbTemplate(payload);
+			const addedRows = buildAddedRows(added);
+			const removedRows = buildRemovedRows(removed);
+			const changedRows = buildChangedRows(changed);
 
-		// Yeni site/template geldiğinde:
-		// case "BAŞKA_DISTILL_ID":
-		//   return renderBaskaTemplate(payload);
+			const metaName = meta?.name || "";
+			const metaUri = meta?.uri || "";
+			const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
 
-		default:
-			// Şimdilik tüm siteler için ana template
-			return renderTcmbTemplate(payload);
-	}
-}
-
-// -------------------------
-// TCMB / Default Template
-// -------------------------
-function renderTcmbTemplate({ meta, added, removed, changed }) {
-	const today = new Date().toLocaleDateString('tr-TR');
-
-	const addedRows = buildAddedRows(added);
-	const removedRows = buildRemovedRows(removed);
-	const changedRows = buildChangedRows(changed);
-
-	const metaName = meta?.name || '';
-	const metaUri = meta?.uri || '';
-	const metaTrDate = meta?.trDate || '';
-
-	return `<!DOCTYPE html>
+			return `<!DOCTYPE html>
 <html>
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Yeni Değişiklikler</title>
-	</head>
-	<body
-		style="
-			margin: 0;
-			padding: 0;
-			background-color: #ffffff;
-			font-family: Arial, Helvetica, sans-serif;
-		"
-	>
-		<table
-			width="100%"
-			cellpadding="0"
-			cellspacing="0"
-			border="0"
-			style="background-color: #ffffff"
-		>
-			<tr>
-				<td align="center">
-					<table
-						width="600"
-						cellpadding="0"
-						cellspacing="0"
-						border="0"
-						style="
-							width: 600px;
-							max-width: 600px;
-							border: 12px solid #42525e;
-							background-color: #ffffff;
-							border-radius: 18px;
-						"
-					>
-						<!-- Header -->
-						<tr>
-							<td
-								align="center"
-								style="background-color: #d4d4d4; padding: 16px 0 12px 0"
-							>
-								<img
-									src="https://raw.githubusercontent.com/alpbayram/todeb-mail/refs/heads/main/TODEB_Logo.png"
-									alt="TODEB Logo"
-									width="280"
-									height="auto"
-									style="
-										display: block;
-										border: none;
-										outline: none;
-										text-decoration: none;
-									"
-								/>
-							</td>
-						</tr>
-						<tr>
-							<td
-								align="center"
-								style="background-color: #d4d4d4; padding: 8px 24px 12px 24px"
-							>								
-								${metaName ? `
-								<p
-									style="
-										margin: 0;
-										font-size: 24px;
-										font-weight: bold;
-										color: #000000;
-									"
-								>
-									${metaName}
-								</p>
-								` : ''} ${metaUri ? `
-								<p style="margin: 4px 0 0 0; font-size: 12px">
-									<a
-										href="${metaUri}"
-										style="color: #1d4ed8; text-decoration: underline"
-									>
-										Siteye gitmek için tıklayınız
-									</a>
-								</p>
-								` : ''}
-							</td>
-						</tr>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yeni Değişiklikler</title>
+  </head>
 
-						<!-- Spacer -->
-						<tr>
-							<td height="24" style="font-size: 0; line-height: 0">&nbsp;</td>
-						</tr>
+  <body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" border="0"
+            style="width:600px;max-width:600px;border:12px solid #42525e;background-color:#ffffff;border-radius:18px;">
 
-						<!-- YENİ EKLENENLER -->
-						<tr>
-							<td style="padding: 0 24px 16px 24px">
-								<table width="100%" cellpadding="0" cellspacing="0" border="0">
-									<tr>
-										<td
-											style="
-												font-size: 18px;
-												font-weight: bold;
-												color: #000000;
-												padding-bottom: 8px;
-											"
-										>
-											Yeni Eklenenler
-										</td>
-									</tr>
-									<tr>
-										<td
-											style="
-												border: 2px solid #b0b0b0;
-												padding: 0;
-												font-size: 14px;
-												color: #405464;
-											"
-										>
-											<table
-												width="100%"
-												cellpadding="0"
-												cellspacing="0"
-												border="0"
-												style="border-collapse: collapse"
-											>
-												<thead>
-													<tr>
-														<th
-															align="left"
-															style="
-																padding: 8px;
-																border-bottom: 1px solid #b0b0b0;
-																font-size: 13px;
-																font-weight: bold;
-																background-color: #42525e;
-																color: white;
-																width: 100px;
-															"
-														>
-															Kuruluş Kodu
-														</th>
-														<th
-															align="left"
-															style="
-																padding: 8px;
-																border-bottom: 1px solid #b0b0b0;
-																font-size: 13px;
-																font-weight: bold;
-																background-color: #42525e;
-																color: white;
-															"
-														>
-															Kuruluş Adı
-														</th>
-														<th
-															align="left"
-															style="
-																padding: 8px;
-																border-bottom: 1px solid #b0b0b0;
-																font-size: 13px;
-																font-weight: bold;
-																background-color: #42525e;
-																color: white;
-																width: 100px;
-															"
-														>
-															Yetkileri
-														</th>
-													</tr>
-												</thead>
-												<tbody>
-													${addedRows}
-												</tbody>
-											</table>
-										</td>
-									</tr>
-								</table>
-							</td>
-						</tr>
+            <!-- Header -->
+            <tr>
+              <td align="center" style="background-color:#d4d4d4;padding:16px 0 12px 0;">
+                <img
+                  src="https://raw.githubusercontent.com/alpbayram/todeb-mail/refs/heads/main/TODEB_Logo.png"
+                  alt="TODEB Logo"
+                  width="280"
+                  height="auto"
+                  style="display:block;border:none;outline:none;text-decoration:none;"
+                />
+              </td>
+            </tr>
 
-						<!-- SİLİNENLER -->
-						<tr>
-							<td style="padding: 0 24px 16px 24px">
-								<table width="100%" cellpadding="0" cellspacing="0" border="0">
-									<tr>
-										<td
-											style="
-												font-size: 18px;
-												font-weight: bold;
-												color: #000000;
-												padding-bottom: 8px;
-											"
-										>
-											Silinenler
-										</td>
-									</tr>
-									<tr>
-										<td
-											style="
-												border: 2px solid #b0b0b0;
-												padding: 0;
-												font-size: 14px;
-												color: #405464;
-											"
-										>
-											<table
-												width="100%"
-												cellpadding="0"
-												cellspacing="0"
-												border="0"
-												style="border-collapse: collapse"
-											>
-												<thead>
-													<tr>
-														<th
-															align="left"
-															style="
-																padding: 8px;
-																border-bottom: 1px solid #b0b0b0;
-																font-size: 13px;
-																font-weight: bold;
-																background-color: #42525e;
-																color: white;
-																width: 100px;
-															"
-														>
-															Kuruluş Kodu
-														</th>
-														<th
-															align="left"
-															style="
-																padding: 8px;
-																border-bottom: 1px solid #b0b0b0;
-																font-size: 13px;
-																font-weight: bold;
-																background-color: #42525e;
-																color: white;
-															"
-														>
-															Kuruluş Adı
-														</th>
-														<th
-															align="left"
-															style="
-																padding: 8px;
-																border-bottom: 1px solid #b0b0b0;
-																font-size: 13px;
-																font-weight: bold;
-																background-color: #42525e;
-																color: white;
-																width: 100px;
-															"
-														>
-															Yetkileri
-														</th>
-													</tr>
-												</thead>
-												<tbody>
-													${removedRows}
-												</tbody>
-											</table>
-										</td>
-									</tr>
-								</table>
-							</td>
-						</tr>
+            <tr>
+              <td align="center" style="background-color:#d4d4d4;padding:8px 24px 12px 24px;">
+                ${metaName ? `
+                  <p style="margin:0;font-size:24px;font-weight:bold;color:#000000;">
+                    ${metaName}
+                  </p>
+                ` : ""}
 
-						<!-- DEĞİŞENLER -->
-						<tr>
-							<td style="padding: 0 24px 24px 24px">
-								<table width="100%" cellpadding="0" cellspacing="0" border="0">
-									<tr>
-										<td
-											style="
-												font-size: 18px;
-												font-weight: bold;
-												color: #000000;
-												padding-bottom: 8px;
-											"
-										>
-											Değişenler
-										</td>
-									</tr>
-									<tr>
-										<td
-											style="
-												border: 2px solid #b0b0b0;
-												padding: 0;
-												font-size: 14px;
-												color: #405464;
-											"
-										>
-											<table
-												width="100%"
-												cellpadding="0"
-												cellspacing="0"
-												border="0"
-												style="border-collapse: collapse"
-											>
-												<thead>
-													<tr>
-														<th
-															align="left"
-															style="
-																padding: 8px;
-																border-bottom: 1px solid #b0b0b0;
-																font-size: 13px;
-																font-weight: bold;
-																background-color: #42525e;
-																color: white;
-																width: 100px;
-															"
-														>
-															Kuruluş Kodu
-														</th>
-														<th
-															align="left"
-															style="
-																padding: 8px;
-																border-bottom: 1px solid #b0b0b0;
-																font-size: 13px;
-																font-weight: bold;
-																background-color: #42525e;
-																color: white;
-															"
-														>
-															Kuruluş Adı
-														</th>
-														<th
-															align="left"
-															style="
-																padding: 8px;
-																border-bottom: 1px solid #b0b0b0;
-																font-size: 13px;
-																font-weight: bold;
-																background-color: #42525e;
-																color: white;
-																width: 100px;
-															"
-														>
-															Yetkileri
-														</th>
-													</tr>
-												</thead>
-												<tbody>
-													${changedRows}
-												</tbody>
-											</table>
-										</td>
-									</tr>
-								</table>
-							</td>
-						</tr>
+                ${metaUri ? `
+                  <p style="margin:4px 0 0 0;font-size:12px;">
+                    <a href="${metaUri}" style="color:#1d4ed8;text-decoration:underline;">
+                      Siteye gitmek için tıklayınız
+                    </a>
+                  </p>
+                ` : ""}
+              </td>
+            </tr>
 
-						<!-- Footer -->
-						<tr>
-							<td
-								align="center"
-								style="
-									background-color: #f0f0f0;
-									padding: 12px;
-									font-size: 12px;
-									color: #000000;
-								"
-							>
-								${metaTrDate}
-							</td>
-						</tr>
-					</table>
-				</td>
-			</tr>
-		</table>
-	</body>
+            <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+
+            <!-- YENİ EKLENENLER -->
+            <tr>
+              <td style="padding:0 24px 16px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Yeni Eklenenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                        <thead>
+                          <tr>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Kuruluş Kodu
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
+                              Kuruluş Adı
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Yetkileri
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>${addedRows}</tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- SİLİNENLER -->
+            <tr>
+              <td style="padding:0 24px 16px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Silinenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                        <thead>
+                          <tr>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Kuruluş Kodu
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
+                              Kuruluş Adı
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Yetkileri
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>${removedRows}</tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- DEĞİŞENLER -->
+            <tr>
+              <td style="padding:0 24px 24px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Değişenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                        <thead>
+                          <tr>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Kuruluş Kodu
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
+                              Kuruluş Adı
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Yetkileri
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>${changedRows}</tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td align="center" style="background-color:#f0f0f0;padding:12px;font-size:12px;color:#000000;">
+                ${metaTrDate}
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>`;
+		}
+	},
+
+	// ------------------------------------------------
+	// Örnek: Duyuru listesi (sadece title)
+	// ------------------------------------------------
+	"tcmb_odeme_sistemleri_ile_ilgili_mevzuat": {
+		render({ meta, added, removed }) {
+			// helper’lar watcher içinde
+			function renderList(list) {
+				if (!list.length) {
+					return `<p style="font-size:13px;color:#777;">Kayıt bulunamadı.</p>`;
+				}
+				return `
+          <ul style="margin:0;padding-left:18px;">
+            ${list.map(x => `<li>${x.title}</li>`).join("")}
+          </ul>
+        `;
+			}
+
+			const metaName = meta?.name || "";
+			const metaUri = meta?.uri || "";
+			const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+
+			return `<!DOCTYPE html>
+<html>
+  <head><meta charset="utf-8" /></head>
+  <body style="font-family:Arial,Helvetica,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;border:2px solid #42525e;border-radius:12px;overflow:hidden;">
+      
+      <div style="background:#d4d4d4;padding:16px;text-align:center;">
+        ${metaName ? `<h2 style="margin:0;">${metaName}</h2>` : ""}
+        ${metaUri ? `<a href="${metaUri}" style="font-size:12px;">Siteye gitmek için tıklayınız</a>` : ""}
+      </div>
+
+      <div style="padding:16px;">
+        <h3 style="margin:0 0 8px 0;">Yeni Eklenenler</h3>
+        ${renderList(added)}
+
+        <h3 style="margin:16px 0 8px 0;">Silinenler</h3>
+        ${renderList(removed)}
+      </div>
+
+      <div style="background:#f0f0f0;padding:10px;font-size:12px;text-align:center;">
+        ${metaTrDate}
+      </div>
+    </div>
+  </body>
+</html>`;
+		}
+	}
+};
+
+// -------------------------
+// Watcher seçimi (öncekine benzer)
+// -------------------------
+function pickWatcher(meta) {
+	const key = meta?.id; // Distill slug
+	return MAIL_WATCHERS[key];
 }
 
 // -------------------------
@@ -538,41 +368,37 @@ module.exports = async (context) => {
 	const { req, res, log, error } = context;
 
 	try {
-		log('Mail function started');
+		log("Mail function started");
 
 		const rawBody = req.body || {};
-		const body = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+		const body = typeof rawBody === "string" ? JSON.parse(rawBody) : rawBody;
 
-		const to = body.to || process.env.SMTP_TO || process.env.SMTP_FROM;
-		const subject = body.subject || 'Güncelleme Raporu';
+		// 1) normalize (payload hep aynı)
+		const payload = normalizePayload(body);
 
-		const meta = body.meta || {};
-		const added = body.added || [];
-		const removed = body.removed || [];
-		const changed = body.changed || [];
+		// 2) watcher seç
+		const watcher = pickWatcher(payload.meta);
+		if (!watcher) {
+			throw new Error(`Mail watcher bulunamadı. meta.id=${payload.meta?.id}`);
+		}
 
-		const html = renderTemplate({ meta, added, removed, changed });
+		// 3) render (watcher bilir)
+		const html = watcher.render(payload);
 
+		// 4) send
 		const transporter = createTransporter();
 
 		await transporter.sendMail({
 			from: process.env.SMTP_FROM,
-			to,
-			subject,
+			to: payload.to,
+			subject: "Güncelleme Raporu", // SABİT
 			html
 		});
 
-		log('Mail sent successfully');
-
-		return res.json({ ok: true, message: 'Mail gönderildi' }, 200);
+		log("Mail sent successfully");
+		return res.json({ ok: true, message: "Mail gönderildi" }, 200);
 	} catch (err) {
 		if (error) error(err);
 		return res.json({ ok: false, error: err.message }, 500);
 	}
 };
-
-
-
-
-
-
