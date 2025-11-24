@@ -306,51 +306,148 @@ const MAIL_WATCHERS = {
 	// ------------------------------------------------
 	// Örnek: Duyuru listesi (sadece title)
 	// ------------------------------------------------
-	"tcmb_odeme_sistemleri_ile_ilgili_mevzuat": {
-		render({ meta, added, removed }) {
-			// helper’lar watcher içinde
-			function renderList(list) {
-				if (!list.length) {
-					return `<p style="font-size:13px;color:#777;">Kayıt bulunamadı.</p>`;
-				}
-				return `
-          <ul style="margin:0;padding-left:18px;">
-            ${list.map(x => `<li>${x.title}</li>`).join("")}
-          </ul>
+	// ------------------------------------------------
+// Dökümanlar Listesi Mail Watcher (title-only)
+// Tasarım: TCMB ile aynı, içerik: tablo yok, liste var
+// ------------------------------------------------
+"tcmb_odeme_sistemleri_ile_ilgili_mevzuat": {
+  render({ meta, added, removed }) {
+
+    function renderDocList(list) {
+      if (!list || list.length === 0) {
+        return `
+          <p style="margin:0;padding:8px;font-size:13px;color:#777777;">
+            Kayıt bulunamadı.
+          </p>
         `;
-			}
+      }
 
-			const metaName = meta?.name || "";
-			const metaUri = meta?.uri || "";
-			const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+      return `
+        <ul style="margin:0;padding:0 0 0 18px;font-size:13px;color:#111827;line-height:1.6;">
+          ${list.map(item => {
+            const title = item.title || item.dokuman_adi || item.name || "-";
+            return `<li style="margin:0 0 6px 0;">${title}</li>`;
+          }).join("")}
+        </ul>
+      `;
+    }
 
-			return `<!DOCTYPE html>
+    const metaName = meta?.name || "";
+    const metaUri = meta?.uri || "";
+    const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+
+    const addedList = renderDocList(added);
+    const removedList = renderDocList(removed);
+
+    return `<!DOCTYPE html>
 <html>
-  <head><meta charset="utf-8" /></head>
-  <body style="font-family:Arial,Helvetica,sans-serif;">
-    <div style="max-width:600px;margin:0 auto;border:2px solid #42525e;border-radius:12px;overflow:hidden;">
-      
-      <div style="background:#d4d4d4;padding:16px;text-align:center;">
-        ${metaName ? `<h2 style="margin:0;">${metaName}</h2>` : ""}
-        ${metaUri ? `<a href="${metaUri}" style="font-size:12px;">Siteye gitmek için tıklayınız</a>` : ""}
-      </div>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dökümanlar Güncelleme</title>
+  </head>
 
-      <div style="padding:16px;">
-        <h3 style="margin:0 0 8px 0;">Yeni Eklenenler</h3>
-        ${renderList(added)}
+  <body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" border="0"
+            style="width:600px;max-width:600px;border:12px solid #42525e;background-color:#ffffff;border-radius:18px;">
 
-        <h3 style="margin:16px 0 8px 0;">Silinenler</h3>
-        ${renderList(removed)}
-      </div>
+            <!-- Header -->
+            <tr>
+              <td align="center" style="background-color:#d4d4d4;padding:16px 0 12px 0;">
+                <img
+                  src="https://raw.githubusercontent.com/alpbayram/todeb-mail/refs/heads/main/TODEB_Logo.png"
+                  alt="TODEB Logo"
+                  width="280"
+                  height="auto"
+                  style="display:block;border:none;outline:none;text-decoration:none;"
+                />
+              </td>
+            </tr>
 
-      <div style="background:#f0f0f0;padding:10px;font-size:12px;text-align:center;">
-        ${metaTrDate}
-      </div>
-    </div>
+            <tr>
+              <td align="center" style="background-color:#d4d4d4;padding:8px 24px 12px 24px;">
+                ${metaName ? `
+                  <p style="margin:0;font-size:24px;font-weight:bold;color:#000000;">
+                    ${metaName}
+                  </p>
+                ` : ""}
+
+                ${metaUri ? `
+                  <p style="margin:4px 0 0 0;font-size:12px;">
+                    <a href="${metaUri}" style="color:#1d4ed8;text-decoration:underline;">
+                      Siteye gitmek için tıklayınız
+                    </a>
+                  </p>
+                ` : ""}
+              </td>
+            </tr>
+
+            <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+
+            <!-- DÖKÜMANLAR (ANA BAŞLIK) -->
+            <tr>
+              <td style="padding:0 24px 8px 24px;">
+                <p style="margin:0;font-size:18px;font-weight:bold;color:#000000;">
+                  Dökümanlar
+                </p>
+              </td>
+            </tr>
+
+            <!-- YENİ EKLENENLER -->
+            <tr>
+              <td style="padding:0 24px 16px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:16px;font-weight:bold;color:#000000;padding-bottom:6px;">
+                      Yeni Eklenenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
+                      ${addedList}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- SİLİNENLER -->
+            <tr>
+              <td style="padding:0 24px 24px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:16px;font-weight:bold;color:#000000;padding-bottom:6px;">
+                      Silinenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
+                      ${removedList}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td align="center" style="background-color:#f0f0f0;padding:12px;font-size:12px;color:#000000;">
+                ${metaTrDate}
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>`;
-		}
-	}
+  }
+},
+
 };
 
 // -------------------------
