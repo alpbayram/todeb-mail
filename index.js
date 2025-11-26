@@ -344,7 +344,7 @@ const MAIL_WATCHERS = {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dökümanlar Güncelleme</title>
+    <title>Distill Güncelleme</title>
   </head>
 
   <body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;">
@@ -371,7 +371,7 @@ const MAIL_WATCHERS = {
               <td align="center" style="background-color:#d4d4d4;padding:8px 24px 12px 24px;">
                 ${metaName ? `
                   <p style="margin:0;font-size:24px;font-weight:bold;color:#000000;">
-                    ${metaName} - Dökümanlar
+                    ${metaName}
                   </p>
                 ` : ""}
 
