@@ -542,7 +542,7 @@ const MAIL_WATCHERS = {
           ${list
                         .map(item => {
                             const title = item.title || "-";
-                            const href = item.href || meta.uri || "";
+                            const href = false;
 
                             if (href) {
                                 return `<li style="margin:0 0 6px 0;">
