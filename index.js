@@ -742,98 +742,98 @@ const MAIL_WATCHERS = {
 
 			// ====== helper: Paragraf bölümü ======
 			function buildParagrafSection(diff) {
-				// diff = { type: "html", html_eski, html_yeni } veya undefined
+				// diff = { type: "paragraph", textHtml, textHtml_eski } veya undefined
 				if (!diff) {
 					return `
 <tr>
-    <td style="padding: 0 24px 16px 24px">
-        <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-                <td style="
-            border: 2px solid #b0b0b0;
-            padding: 0;
-            font-size: 14px;
-            color: #405464;
+  <td style="padding: 0 24px 16px 24px">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="
+          border: 2px solid #b0b0b0;
+          padding: 0;
+          font-size: 14px;
+          color: #405464;
         ">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse">
-                        <thead>
-                            <tr>
-                                <th align="left" style="
-                    padding: 8px;
-                    border-bottom: 1px solid #b0b0b0;
-                    font-size: 13px;
-                    font-weight: bold;
-                    background-color: #42525e;
-                    color: white;
-                    ">
-                                    Değişiklikler
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 12px; vertical-align: top">
-                                   Paragraf değişikliği bulunmamaktadır.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse">
+            <thead>
+              <tr>
+                <th align="left" style="
+                  padding: 8px;
+                  border-bottom: 1px solid #b0b0b0;
+                  font-size: 13px;
+                  font-weight: bold;
+                  background-color: #42525e;
+                  color: white;
+                ">
+                  Paragraf Değişiklikleri
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 12px; vertical-align: top">
+                  Paragraf değişikliği bulunmamaktadır.
                 </td>
-            </tr>
-        </table>
-    </td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </td>
 </tr>
         `;
 				}
 
-				const eski = diff.html_eski || "";
-				const yeni = diff.html_yeni || "";
+				const eski = diff.textHtml_eski || "";
+				const yeni = diff.textHtml || "";
 
 				return `
 <tr>
-    <td style="padding: 0 24px 16px 24px">
-        <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-                <td style="
-            border: 2px solid #b0b0b0;
-            padding: 0;
-            font-size: 14px;
-            color: #405464;
+  <td style="padding: 0 24px 16px 24px">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="
+          border: 2px solid #b0b0b0;
+          padding: 0;
+          font-size: 14px;
+          color: #405464;
         ">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse">
-                        <thead>
-                            <tr>
-                                <th align="left" style="
-                    padding: 8px;
-                    border-bottom: 1px solid #b0b0b0;
-                    font-size: 13px;
-                    font-weight: bold;
-                    background-color: #42525e;
-                    color: white;
-                    ">
-                                  Paragraf Değişiklikleri
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 12px; vertical-align: top">
-                                    ${yeni || "<i>Boş</i>"}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse">
+            <thead>
+              <tr>
+                <th align="left" style="
+                  padding: 8px;
+                  border-bottom: 1px solid #b0b0b0;
+                  font-size: 13px;
+                  font-weight: bold;
+                  background-color: #42525e;
+                  color: white;
+                ">
+                  Paragraf Değişiklikleri
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 12px; vertical-align: top">
+                  ${yeni || "<i>Boş</i>"}
                 </td>
-            </tr>
-        </table>
-    </td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </td>
 </tr>
 `;
 			}
 
-			// changed içinde hem table hem html var → ayıralım
-			const tableChanged = (changed || []).filter(c => c.type !== "html");
-			const htmlChange = (changed || []).find(c => c.type === "html");
+			// changed içinde hem table hem paragraph var → ayıralım
+			const tableChanged = (changed || []).filter(c => c.type !== "paragraph");
+			const htmlChange = (changed || []).find(c => c.type === "paragraph");
 
 			const addedRows = buildAddedRows(added || []);
 			const removedRows = buildRemovedRows(removed || []);
@@ -891,8 +891,6 @@ const MAIL_WATCHERS = {
             </tr>
 
             <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-
-           
 
             <!-- YENİ EKLENENLER -->
             <tr>
@@ -993,8 +991,9 @@ const MAIL_WATCHERS = {
               </td>
             </tr>
 
-			 <!-- PARAGRAF DEĞİŞİKLİKLERİ -->
+            <!-- PARAGRAF DEĞİŞİKLİKLERİ -->
             ${paragrafSection}
+
             <!-- Footer -->
             <tr>
               <td align="center" style="background-color:#f0f0f0;padding:12px;font-size:12px;color:#000000;">
@@ -1010,6 +1009,7 @@ const MAIL_WATCHERS = {
 </html>`;
 		}
 	},
+
 	"tcmb_duyurular": {
 		render({ meta, added /*, removed, changed */ }) {
 
