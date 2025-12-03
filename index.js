@@ -811,7 +811,7 @@ const MAIL_WATCHERS = {
                     background-color: #42525e;
                     color: white;
                     ">
-                                    Değişiklikler
+                                  Paragraf Değişiklikleri
                                 </th>
                             </tr>
                         </thead>
