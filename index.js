@@ -21,14 +21,19 @@ function createTransporter() {
 // -------------------------
 function normalizePayload(body) {
   const meta = body.meta || {};
+
   return {
     to: body.to || meta.to || process.env.SMTP_TO || process.env.SMTP_FROM,
     meta,
-    added: Array.isArray(body.added) ? body.added : [],
-    removed: Array.isArray(body.removed) ? body.removed : [],
-    changed: Array.isArray(body.changed) ? body.changed : []
+    // Burada shape'e karışmıyoruz:
+    // - Basit watchers için added = [] (zaten array yolluyoruz)
+    // - Composite watcher için { table, html } obje olarak kalacak
+    added: body.added   ?? [],
+    removed: body.removed ?? [],
+    changed: body.changed ?? []
   };
 }
+
 
 // ====================================================
 //  📌 MAIL WATCHERS (meta.id -> render)
