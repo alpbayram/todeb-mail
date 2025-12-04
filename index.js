@@ -31,275 +31,6 @@ function normalizePayload(body) {
 }
 
 // ====================================================
-//  Ortak TCMB tablo template'i
-// ====================================================
-function renderTcmbTableTemplate({ meta, added, removed, changed }) {
-  // --- buradaki üç helper eski watcher'dakiyle aynı ---
-  function buildAddedRows(list) {
-    if (!list.length) {
-      return `
-        <tr>
-          <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
-            Kayıt bulunamadı.
-          </td>
-        </tr>
-      `;
-    }
-
-    return list.map(item => {
-      const yetkiler = (item.yetkiler || []).join(", ") || "-";
-      return `
-        <tr>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${item.kurulus_kodu}
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${item.kurulus_adi}
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${yetkiler}
-          </td>
-        </tr>
-      `;
-    }).join("");
-  }
-
-  function buildRemovedRows(list) {
-    if (!list.length) {
-      return `
-        <tr>
-          <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
-            Kayıt bulunamadı.
-          </td>
-        </tr>
-      `;
-    }
-
-    return list.map(item => {
-      const yetkiler = (item.yetkiler || []).join(", ") || "-";
-      return `
-        <tr>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${item.kurulus_kodu}
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${item.kurulus_adi}
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-            ${yetkiler}
-          </td>
-        </tr>
-      `;
-    }).join("");
-  }
-
-  function buildChangedRows(list) {
-    if (!list.length) {
-      return `
-        <tr>
-          <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
-            Kayıt bulunamadı.
-          </td>
-        </tr>
-      `;
-    }
-
-    return list.map(item => {
-      const eskiYetkiler = (item.yetkiler_eski || []).join(", ") || "-";
-      const yeniYetkiler = (item.yetkiler || []).join(", ") || "-";
-
-      return `
-        <tr>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:middle;">
-            ${item.kurulus_kodu}
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
-            <div>${item.kurulus_adi_eski || "-"}</div>
-            <div style="margin-top:4px;">${item.kurulus_adi}</div>
-          </td>
-          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
-            <div>${eskiYetkiler}</div>
-            <div style="margin-top:4px;">${yeniYetkiler}</div>
-          </td>
-        </tr>
-      `;
-    }).join("");
-  }
-
-  const addedRows = buildAddedRows(added || []);
-  const removedRows = buildRemovedRows(removed || []);
-  const changedRows = buildChangedRows(changed || []);
-
-  const metaName = meta?.name || "";
-  const metaUri = meta?.uri || "";
-  const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
-
-  // ⬇⬇⬇ Bu HTML senin mevcut TCMB template'in bire bir aynısı ⬇⬇⬇
-  return `<!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yeni Değişiklikler</title>
-  </head>
-
-  <body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;">
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
-      <tr>
-        <td align="center">
-          <table width="600" cellpadding="0" cellspacing="0" border="0"
-            style="width:600px;max-width:600px;border:12px solid #42525e;background-color:#ffffff;border-radius:18px;">
-
-            <!-- Header -->
-            <tr>
-              <td align="center" style="background-color:#d4d4d4;padding:16px 0 12px 0;">
-                <img
-                  src="https://raw.githubusercontent.com/alpbayram/todeb-mail/refs/heads/main/TODEB_Logo.png"
-                  alt="TODEB Logo"
-                  width="280"
-                  height="auto"
-                  style="display:block;border:none;outline:none;text-decoration:none;"
-                />
-              </td>
-            </tr>
-
-            <tr>
-              <td align="center" style="background-color:#d4d4d4;padding:8px 24px 12px 24px;">
-                ${metaName ? `
-                  <p style="margin:0;font-size:24px;font-weight:bold;color:#000000;">
-                    ${metaName}
-                  </p>
-                ` : ""}
-
-                ${metaUri ? `
-                  <p style="margin:4px 0 0 0;font-size:12px;">
-                    <a href="${metaUri}" style="color:#1d4ed8;text-decoration:underline;">
-                      Siteye gitmek için tıklayınız
-                    </a>
-                  </p>
-                ` : ""}
-              </td>
-            </tr>
-
-            <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-
-            <!-- YENİ EKLENENLER -->
-            <tr>
-              <td style="padding:0 24px 16px 24px;">
-                <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
-                      Yeni Eklenenler
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
-                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
-                        <thead>
-                          <tr>
-                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
-                              Kuruluş Kodu
-                            </th>
-                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
-                              Kuruluş Adı
-                            </th>
-                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
-                              Yetkileri
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>${addedRows}</tbody>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <!-- SİLİNENLER -->
-            <tr>
-              <td style="padding:0 24px 16px 24px;">
-                <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
-                      Silinenler
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
-                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
-                        <thead>
-                          <tr>
-                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
-                              Kuruluş Kodu
-                            </th>
-                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
-                              Kuruluş Adı
-                            </th>
-                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
-                              Yetkileri
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>${removedRows}</tbody>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <!-- DEĞİŞENLER -->
-            <tr>
-              <td style="padding:0 24px 24px 24px;">
-                <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
-                      Değişenler
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
-                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
-                        <thead>
-                          <tr>
-                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
-                              Kuruluş Kodu
-                            </th>
-                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
-                              Kuruluş Adı
-                            </th>
-                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
-                              Yetkileri
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>${changedRows}</tbody>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <!-- Footer -->
-            <tr>
-              <td align="center" style="background-color:#f0f0f0;padding:12px;font-size:12px;color:#000000;">
-                ${metaTrDate}
-              </td>
-            </tr>
-
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>`;
-}
-
-
-
-// ====================================================
 //  📌 MAIL WATCHERS (meta.id -> render)
 //  Her watcher kendi helper + html’ini taşır.
 // ====================================================
@@ -915,78 +646,303 @@ const MAIL_WATCHERS = {
 </html>`;
     }
   },
-  "tcmb_odeme_kuruluslari_table_paragraf": {
-    render(payload) {
-      const meta = payload.meta || {};
-      const added = payload.added || {};
-      const removed = payload.removed || {};
-      const changed = payload.changed || {};
 
-      // 1) TABLO kısmı için: sadece table altındaki listeleri kullan
+  "tcmb_odeme_kuruluslari_table_paragraf": {
+    render({ meta, added, removed, changed }) {
       const tableAdded = added.table || [];
       const tableRemoved = removed.table || [];
       const tableChanged = changed.table || [];
 
-      // Önce baz tablo HTML'ini üret
-      let html = renderTcmbTableTemplate({
-        meta,
-        added: tableAdded,
-        removed: tableRemoved,
-        changed: tableChanged
-      });
-
-      // 2) PARAGRAF kısmı için html altındaki item'lara bak
       const htmlAdded = added.html || [];
       const htmlRemoved = removed.html || [];
       const htmlChanged = changed.html || [];
 
-      let paragraphContent = "";
+      // ---- 3.1) Tablo satır helper’ları (TCMB ile aynı) ----
+      function buildAddedRows(list) {
+        if (!list.length) {
+          return `
+            <tr>
+              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+                Kayıt bulunamadı.
+              </td>
+            </tr>
+          `;
+        }
+
+        return list.map(item => {
+          const yetkiler = (item.yetkiler || []).join(", ") || "-";
+          return `
+            <tr>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_kodu}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_adi}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${yetkiler}
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      function buildRemovedRows(list) {
+        if (!list.length) {
+          return `
+            <tr>
+              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+                Kayıt bulunamadı.
+              </td>
+            </tr>
+          `;
+        }
+
+        return list.map(item => {
+          const yetkiler = (item.yetkiler || []).join(", ") || "-";
+          return `
+            <tr>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_kodu}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_adi}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${yetkiler}
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      function buildChangedRows(list) {
+        if (!list.length) {
+          return `
+            <tr>
+              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+                Kayıt bulunamadı.
+              </td>
+            </tr>
+          `;
+        }
+
+        return list.map(item => {
+          const eskiYetkiler = (item.yetkiler_eski || []).join(", ") || "-";
+          const yeniYetkiler = (item.yetkiler || []).join(", ") || "-";
+
+          return `
+            <tr>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:middle;">
+                ${item.kurulus_kodu}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
+                <div>${item.kurulus_adi_eski || "-"}</div>
+                <div style="margin-top:4px;">${item.kurulus_adi}</div>
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
+                <div>${eskiYetkiler}</div>
+                <div style="margin-top:4px;">${yeniYetkiler}</div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      const addedRows = buildAddedRows(tableAdded);
+      const removedRows = buildRemovedRows(tableRemoved);
+      const changedRows = buildChangedRows(tableChanged);
+
+      // ---- 3.2) Paragraf bloğu ----
+      let paragraphInner = "";
 
       if (htmlChanged.length > 0) {
         const p = htmlChanged[0];
-        paragraphContent = `
-        <div style="font-size:13px;color:#111827;line-height:1.5;">
-          <div style="margin-bottom:6px;"><strong>Önceki:</strong></div>
-          <div style="margin-bottom:10px;">${p.textHtml_eski || "-"}</div>
-          <div style="margin-bottom:6px;"><strong>Yeni:</strong></div>
-          <div>${p.textHtml || "-"}</div>
-        </div>
-      `;
+        paragraphInner = `
+          <div style="font-size:13px;color:#111827;line-height:1.5;">
+            <div style="margin-bottom:6px;"><strong>Önceki:</strong></div>
+            <div style="margin-bottom:10px;">${p.textHtml_eski || "-"}</div>
+            <div style="margin-bottom:6px;"><strong>Yeni:</strong></div>
+            <div>${p.textHtml || "-"}</div>
+          </div>
+        `;
       } else if (htmlAdded.length > 0) {
         const p = htmlAdded[0];
-        paragraphContent = `
-        <div style="font-size:13px;color:#111827;line-height:1.5;">
-          <div style="margin-bottom:6px;"><strong>Yeni paragraf:</strong></div>
-          <div>${p.textHtml || "-"}</div>
-        </div>
-      `;
+        paragraphInner = `
+          <div style="font-size:13px;color:#111827;line-height:1.5;">
+            <div style="margin-bottom:6px;"><strong>Yeni paragraf:</strong></div>
+            <div>${p.textHtml || "-"}</div>
+          </div>
+        `;
       } else if (htmlRemoved.length > 0) {
         const p = htmlRemoved[0];
-        paragraphContent = `
-        <div style="font-size:13px;color:#111827;line-height:1.5;">
-          <div style="margin-bottom:6px;"><strong>Kaldırılan paragraf:</strong></div>
-          <div>${p.textHtml || "-"}</div>
-        </div>
-      `;
+        paragraphInner = `
+          <div style="font-size:13px;color:#111827;line-height:1.5;">
+            <div style="margin-bottom:6px;"><strong>Kaldırılan paragraf:</strong></div>
+            <div>${p.textHtml || "-"}</div>
+          </div>
+        `;
       } else {
-        // hiçbir değişiklik yok
-        paragraphContent = `
-        <p style="margin:0;font-size:13px;color:#777777;">
-          Paragraf değişikliği bulunmamaktadır.
-        </p>
-      `;
+        paragraphInner = `
+          <p style="margin:0;font-size:13px;color:#777777;">
+            Paragraf değişikliği bulunmamaktadır.
+          </p>
+        `;
       }
 
-      // 3) Bu paragraf bloğunu Footer'dan hemen önce enjekte et
-      const marker = "<!-- Footer -->";
-      const idx = html.indexOf(marker);
+      const metaName = meta?.name || "";
+      const metaUri = meta?.uri || "";
+      const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
 
-      if (idx === -1) {
-        // marker bulunmazsa, en sona ekleyelim (extreme case)
-        return html.replace(
-          "</table>\n        </td>\n      </tr>\n    </table>\n  </body>",
-          `
-            <!-- Paragraf Değişiklikleri (fallback) -->
+      // ---- 3.3) Hem tablo hem paragraf tek template'te ----
+      return `<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yeni Değişiklikler</title>
+  </head>
+
+  <body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" border="0"
+            style="width:600px;max-width:600px;border:12px solid #42525e;background-color:#ffffff;border-radius:18px;">
+
+            <!-- Header -->
+            <tr>
+              <td align="center" style="background-color:#d4d4d4;padding:16px 0 12px 0;">
+                <img
+                  src="https://raw.githubusercontent.com/alpbayram/todeb-mail/refs/heads/main/TODEB_Logo.png"
+                  alt="TODEB Logo"
+                  width="280"
+                  height="auto"
+                  style="display:block;border:none;outline:none;text-decoration:none;"
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="background-color:#d4d4d4;padding:8px 24px 12px 24px;">
+                ${metaName ? `
+                  <p style="margin:0;font-size:24px;font-weight:bold;color:#000000;">
+                    ${metaName}
+                  </p>
+                ` : ""}
+
+                ${metaUri ? `
+                  <p style="margin:4px 0 0 0;font-size:12px;">
+                    <a href="${metaUri}" style="color:#1d4ed8;text-decoration:underline;">
+                      Siteye gitmek için tıklayınız
+                    </a>
+                  </p>
+                ` : ""}
+              </td>
+            </tr>
+
+            <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+
+            <!-- TABLO: Yeni Eklenenler -->
+            <tr>
+              <td style="padding:0 24px 16px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Yeni Eklenenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                        <thead>
+                          <tr>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Kuruluş Kodu
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
+                              Kuruluş Adı
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Yetkileri
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>${addedRows}</tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- TABLO: Silinenler -->
+            <tr>
+              <td style="padding:0 24px 16px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Silinenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                        <thead>
+                          <tr>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Kuruluş Kodu
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
+                              Kuruluş Adı
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Yetkileri
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>${removedRows}</tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- TABLO: Değişenler -->
+            <tr>
+              <td style="padding:0 24px 16px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Değişenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                        <thead>
+                          <tr>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Kuruluş Kodu
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
+                              Kuruluş Adı
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Yetkileri
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>${changedRows}</tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- PARAGRAF DEĞİŞİKLİKLERİ -->
             <tr>
               <td style="padding:0 24px 24px 24px;">
                 <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -997,48 +953,28 @@ const MAIL_WATCHERS = {
                   </tr>
                   <tr>
                     <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
-                      ${paragraphContent}
+                      ${paragraphInner}
                     </td>
                   </tr>
                 </table>
               </td>
             </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>`
-        );
-      }
 
-      const before = html.slice(0, idx);
-      const after = html.slice(idx);
-
-      const paragraphBlock = `
-            <!-- Paragraf Değişiklikleri -->
+            <!-- Footer -->
             <tr>
-              <td style="padding:0 24px 24px 24px;">
-                <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
-                      Paragraf Değişiklikleri
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
-                      ${paragraphContent}
-                    </td>
-                  </tr>
-                </table>
+              <td align="center" style="background-color:#f0f0f0;padding:12px;font-size:12px;color:#000000;">
+                ${metaTrDate}
               </td>
             </tr>
-`;
 
-      return before + paragraphBlock + after;
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
     }
   },
-
-
   "tcmb_duyurular": {
     render({ meta, added /*, removed, changed */ }) {
 
