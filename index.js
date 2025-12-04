@@ -28,7 +28,7 @@ function normalizePayload(body) {
     // Burada shape'e karışmıyoruz:
     // - Basit watchers için added = [] (zaten array yolluyoruz)
     // - Composite watcher için { table, html } obje olarak kalacak
-    added: body.added   ?? [],
+    added: body.added ?? [],
     removed: body.removed ?? [],
     changed: body.changed ?? []
   };
@@ -952,9 +952,9 @@ const MAIL_WATCHERS = {
               <td style="padding:0 24px 24px 24px;">
                 <table width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
-                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                    <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
                       Paragraf Değişiklikleri
-                    </td>
+                    </th>
                   </tr>
                   <tr>
                     <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
