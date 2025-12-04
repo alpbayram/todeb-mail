@@ -4,15 +4,15 @@ const nodemailer = require("nodemailer");
 // SMTP transporter
 // -------------------------
 function createTransporter() {
-	return nodemailer.createTransport({
-		host: process.env.SMTP_HOST,
-		port: Number(process.env.SMTP_PORT || 587),
-		secure: process.env.SMTP_SECURE === "true",
-		auth: {
-			user: process.env.SMTP_USER,
-			pass: process.env.SMTP_PASS
-		}
-	});
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
 }
 
 // -------------------------
@@ -20,127 +20,122 @@ function createTransporter() {
 // (ÖNCEKİ FUNCTION'DAKİ mapDistillToNewData gibi düşün)
 // -------------------------
 function normalizePayload(body) {
-	const meta = body.meta || {};
-	return {
-		to: body.to || meta.to || process.env.SMTP_TO || process.env.SMTP_FROM,
-		meta,
-		added: Array.isArray(body.added) ? body.added : [],
-		removed: Array.isArray(body.removed) ? body.removed : [],
-		changed: Array.isArray(body.changed) ? body.changed : []
-	};
+  const meta = body.meta || {};
+  return {
+    to: body.to || meta.to || process.env.SMTP_TO || process.env.SMTP_FROM,
+    meta,
+    added: Array.isArray(body.added) ? body.added : [],
+    removed: Array.isArray(body.removed) ? body.removed : [],
+    changed: Array.isArray(body.changed) ? body.changed : []
+  };
 }
 
 // ====================================================
-//  📌 MAIL WATCHERS (meta.id -> render)
-//  Her watcher kendi helper + html’ini taşır.
+//  Ortak TCMB tablo template'i
 // ====================================================
-const MAIL_WATCHERS = {
-	// ------------------------------------------------
-	// TCMB Ödeme Kuruluşları Tablosu
-	// ------------------------------------------------
-	"tcmb_odeme_kuruluslari": {
-		render({ meta, added, removed, changed }) {
-			// ====== TCMB helper’ları watcher içinde ======
-			function buildAddedRows(list) {
-				if (!list.length) {
-					return `
-            <tr>
-              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
-                Kayıt bulunamadı.
-              </td>
-            </tr>
-          `;
-				}
+function renderTcmbTableTemplate({ meta, added, removed, changed }) {
+  // --- buradaki üç helper eski watcher'dakiyle aynı ---
+  function buildAddedRows(list) {
+    if (!list.length) {
+      return `
+        <tr>
+          <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+            Kayıt bulunamadı.
+          </td>
+        </tr>
+      `;
+    }
 
-				return list.map(item => {
-					const yetkiler = (item.yetkiler || []).join(", ") || "-";
-					return `
-            <tr>
-              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-                ${item.kurulus_kodu}
-              </td>
-              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-                ${item.kurulus_adi}
-              </td>
-              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-                ${yetkiler}
-              </td>
-            </tr>
-          `;
-				}).join("");
-			}
+    return list.map(item => {
+      const yetkiler = (item.yetkiler || []).join(", ") || "-";
+      return `
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+            ${item.kurulus_kodu}
+          </td>
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+            ${item.kurulus_adi}
+          </td>
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+            ${yetkiler}
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
 
-			function buildRemovedRows(list) {
-				if (!list.length) {
-					return `
-            <tr>
-              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
-                Kayıt bulunamadı.
-              </td>
-            </tr>
-          `;
-				}
+  function buildRemovedRows(list) {
+    if (!list.length) {
+      return `
+        <tr>
+          <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+            Kayıt bulunamadı.
+          </td>
+        </tr>
+      `;
+    }
 
-				return list.map(item => {
-					const yetkiler = (item.yetkiler || []).join(", ") || "-";
-					return `
-            <tr>
-              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-                ${item.kurulus_kodu}
-              </td>
-              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-                ${item.kurulus_adi}
-              </td>
-              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
-                ${yetkiler}
-              </td>
-            </tr>
-          `;
-				}).join("");
-			}
+    return list.map(item => {
+      const yetkiler = (item.yetkiler || []).join(", ") || "-";
+      return `
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+            ${item.kurulus_kodu}
+          </td>
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+            ${item.kurulus_adi}
+          </td>
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+            ${yetkiler}
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
 
-			function buildChangedRows(list) {
-				if (!list.length) {
-					return `
-            <tr>
-              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
-                Kayıt bulunamadı.
-              </td>
-            </tr>
-          `;
-				}
+  function buildChangedRows(list) {
+    if (!list.length) {
+      return `
+        <tr>
+          <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+            Kayıt bulunamadı.
+          </td>
+        </tr>
+      `;
+    }
 
-				return list.map(item => {
-					const eskiYetkiler = (item.yetkiler_eski || []).join(", ") || "-";
-					const yeniYetkiler = (item.yetkiler || []).join(", ") || "-";
+    return list.map(item => {
+      const eskiYetkiler = (item.yetkiler_eski || []).join(", ") || "-";
+      const yeniYetkiler = (item.yetkiler || []).join(", ") || "-";
 
-					return `
-            <tr>
-              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:middle;">
-                ${item.kurulus_kodu}
-              </td>
-              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
-                <div>${item.kurulus_adi_eski || "-"}</div>
-                <div style="margin-top:4px;">${item.kurulus_adi}</div>
-              </td>
-              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
-                <div>${eskiYetkiler}</div>
-                <div style="margin-top:4px;">${yeniYetkiler}</div>
-              </td>
-            </tr>
-          `;
-				}).join("");
-			}
+      return `
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:middle;">
+            ${item.kurulus_kodu}
+          </td>
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
+            <div>${item.kurulus_adi_eski || "-"}</div>
+            <div style="margin-top:4px;">${item.kurulus_adi}</div>
+          </td>
+          <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
+            <div>${eskiYetkiler}</div>
+            <div style="margin-top:4px;">${yeniYetkiler}</div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
 
-			const addedRows = buildAddedRows(added);
-			const removedRows = buildRemovedRows(removed);
-			const changedRows = buildChangedRows(changed);
+  const addedRows = buildAddedRows(added || []);
+  const removedRows = buildRemovedRows(removed || []);
+  const changedRows = buildChangedRows(changed || []);
 
-			const metaName = meta?.name || "";
-			const metaUri = meta?.uri || "";
-			const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+  const metaName = meta?.name || "";
+  const metaUri = meta?.uri || "";
+  const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
 
-			return `<!DOCTYPE html>
+  // ⬇⬇⬇ Bu HTML senin mevcut TCMB template'in bire bir aynısı ⬇⬇⬇
+  return `<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -300,46 +295,320 @@ const MAIL_WATCHERS = {
     </table>
   </body>
 </html>`;
-		}
-	},
+}
 
-	// ------------------------------------------------
-	// Örnek: Duyuru listesi (sadece title)
-	// ------------------------------------------------
-	// ------------------------------------------------
-	// Dökümanlar Listesi Mail Watcher (title-only)
-	// Tasarım: TCMB ile aynı, içerik: tablo yok, liste var
-	// ------------------------------------------------
-	"tcmb_odeme_sistemleri_ile_ilgili_mevzuat": {
-		render({ meta, added, removed }) {
 
-			function renderDocList(list) {
-				if (!list || list.length === 0) {
-					return `
+
+// ====================================================
+//  📌 MAIL WATCHERS (meta.id -> render)
+//  Her watcher kendi helper + html’ini taşır.
+// ====================================================
+const MAIL_WATCHERS = {
+  // ------------------------------------------------
+  // TCMB Ödeme Kuruluşları Tablosu
+  // ------------------------------------------------
+  "tcmb_odeme_kuruluslari": {
+    render({ meta, added, removed, changed }) {
+      // ====== TCMB helper’ları watcher içinde ======
+      function buildAddedRows(list) {
+        if (!list.length) {
+          return `
+            <tr>
+              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+                Kayıt bulunamadı.
+              </td>
+            </tr>
+          `;
+        }
+
+        return list.map(item => {
+          const yetkiler = (item.yetkiler || []).join(", ") || "-";
+          return `
+            <tr>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_kodu}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_adi}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${yetkiler}
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      function buildRemovedRows(list) {
+        if (!list.length) {
+          return `
+            <tr>
+              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+                Kayıt bulunamadı.
+              </td>
+            </tr>
+          `;
+        }
+
+        return list.map(item => {
+          const yetkiler = (item.yetkiler || []).join(", ") || "-";
+          return `
+            <tr>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_kodu}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${item.kurulus_adi}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;">
+                ${yetkiler}
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      function buildChangedRows(list) {
+        if (!list.length) {
+          return `
+            <tr>
+              <td colspan="3" style="padding:8px;font-size:13px;color:#777777;">
+                Kayıt bulunamadı.
+              </td>
+            </tr>
+          `;
+        }
+
+        return list.map(item => {
+          const eskiYetkiler = (item.yetkiler_eski || []).join(", ") || "-";
+          const yeniYetkiler = (item.yetkiler || []).join(", ") || "-";
+
+          return `
+            <tr>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:middle;">
+                ${item.kurulus_kodu}
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
+                <div>${item.kurulus_adi_eski || "-"}</div>
+                <div style="margin-top:4px;">${item.kurulus_adi}</div>
+              </td>
+              <td style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;vertical-align:top;">
+                <div>${eskiYetkiler}</div>
+                <div style="margin-top:4px;">${yeniYetkiler}</div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      const addedRows = buildAddedRows(added);
+      const removedRows = buildRemovedRows(removed);
+      const changedRows = buildChangedRows(changed);
+
+      const metaName = meta?.name || "";
+      const metaUri = meta?.uri || "";
+      const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+
+      return `<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yeni Değişiklikler</title>
+  </head>
+
+  <body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" border="0"
+            style="width:600px;max-width:600px;border:12px solid #42525e;background-color:#ffffff;border-radius:18px;">
+
+            <!-- Header -->
+            <tr>
+              <td align="center" style="background-color:#d4d4d4;padding:16px 0 12px 0;">
+                <img
+                  src="https://raw.githubusercontent.com/alpbayram/todeb-mail/refs/heads/main/TODEB_Logo.png"
+                  alt="TODEB Logo"
+                  width="280"
+                  height="auto"
+                  style="display:block;border:none;outline:none;text-decoration:none;"
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="background-color:#d4d4d4;padding:8px 24px 12px 24px;">
+                ${metaName ? `
+                  <p style="margin:0;font-size:24px;font-weight:bold;color:#000000;">
+                    ${metaName}
+                  </p>
+                ` : ""}
+
+                ${metaUri ? `
+                  <p style="margin:4px 0 0 0;font-size:12px;">
+                    <a href="${metaUri}" style="color:#1d4ed8;text-decoration:underline;">
+                      Siteye gitmek için tıklayınız
+                    </a>
+                  </p>
+                ` : ""}
+              </td>
+            </tr>
+
+            <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+
+            <!-- YENİ EKLENENLER -->
+            <tr>
+              <td style="padding:0 24px 16px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Yeni Eklenenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                        <thead>
+                          <tr>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Kuruluş Kodu
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
+                              Kuruluş Adı
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Yetkileri
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>${addedRows}</tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- SİLİNENLER -->
+            <tr>
+              <td style="padding:0 24px 16px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Silinenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                        <thead>
+                          <tr>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Kuruluş Kodu
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
+                              Kuruluş Adı
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Yetkileri
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>${removedRows}</tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- DEĞİŞENLER -->
+            <tr>
+              <td style="padding:0 24px 24px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Değişenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:0;font-size:14px;color:#405464;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                        <thead>
+                          <tr>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Kuruluş Kodu
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;">
+                              Kuruluş Adı
+                            </th>
+                            <th align="left" style="padding:8px;border-bottom:1px solid #b0b0b0;font-size:13px;font-weight:bold;background-color:#42525e;color:white;width:100px;">
+                              Yetkileri
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>${changedRows}</tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td align="center" style="background-color:#f0f0f0;padding:12px;font-size:12px;color:#000000;">
+                ${metaTrDate}
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+    }
+  },
+
+  // ------------------------------------------------
+  // Örnek: Duyuru listesi (sadece title)
+  // ------------------------------------------------
+  // ------------------------------------------------
+  // Dökümanlar Listesi Mail Watcher (title-only)
+  // Tasarım: TCMB ile aynı, içerik: tablo yok, liste var
+  // ------------------------------------------------
+  "tcmb_odeme_sistemleri_ile_ilgili_mevzuat": {
+    render({ meta, added, removed }) {
+
+      function renderDocList(list) {
+        if (!list || list.length === 0) {
+          return `
           <p style="margin:0;padding:8px;font-size:13px;color:#777777;">
             Kayıt bulunamadı.
           </p>
         `;
-				}
+        }
 
-				return `
+        return `
         <ul style="margin:0 0 0 -12px;padding:0 0 0 24px;font-size:13px;color:#111827;line-height:1.6;">
           ${list.map(item => {
-					const title = item.title || item.dokuman_adi || item.name || "-";
-					return `<li style="margin:0 0 6px 0;">${title}</li>`;
-				}).join("")}
+          const title = item.title || item.dokuman_adi || item.name || "-";
+          return `<li style="margin:0 0 6px 0;">${title}</li>`;
+        }).join("")}
         </ul>
       `;
-			}
+      }
 
-			const metaName = meta?.name || "";
-			const metaUri = meta?.uri || "";
-			const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+      const metaName = meta?.name || "";
+      const metaUri = meta?.uri || "";
+      const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
 
-			const addedList = renderDocList(added);
-			const removedList = renderDocList(removed);
+      const addedList = renderDocList(added);
+      const removedList = renderDocList(removed);
 
-			return `<!DOCTYPE html>
+      return `<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -436,21 +705,21 @@ const MAIL_WATCHERS = {
     </table>
   </body>
 </html>`;
-		}
-	},
-	"tcmb_odeme_kuruluslari_paragraf": {
-		render({ meta, added, removed, changed }) {
-			const metaName = meta?.name || "";
-			const metaUri = meta?.uri || "";
-			const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+    }
+  },
+  "tcmb_odeme_kuruluslari_paragraf": {
+    render({ meta, added, removed, changed }) {
+      const metaName = meta?.name || "";
+      const metaUri = meta?.uri || "";
+      const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
 
-			// distill sadece değiştiğinde tetiklediği için çoğunlukla changed[0] dolu gelecek
-			const newHtml =
-				(changed?.[0]?.textHtml) ||
-				(added?.[0]?.textHtml) ||
-				"";
+      // distill sadece değiştiğinde tetiklediği için çoğunlukla changed[0] dolu gelecek
+      const newHtml =
+        (changed?.[0]?.textHtml) ||
+        (added?.[0]?.textHtml) ||
+        "";
 
-			return `<!DOCTYPE html>
+      return `<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -520,52 +789,52 @@ const MAIL_WATCHERS = {
     </table>
   </body>
 </html>`;
-		}
-	},// ------------------------------------------------
-	// TCMB Duyurular Mail Watcher
-	// (sadece Yeni Duyurular listesini gösterir)
-	// ------------------------------------------------
-	"duyurular": {
-		render({ meta, added /*, removed, changed */ }) {
+    }
+  },// ------------------------------------------------
+  // TCMB Duyurular Mail Watcher
+  // (sadece Yeni Duyurular listesini gösterir)
+  // ------------------------------------------------
+  "duyurular": {
+    render({ meta, added /*, removed, changed */ }) {
 
-			function renderAnnouncements(list) {
-				if (!list || list.length === 0) {
-					return `
+      function renderAnnouncements(list) {
+        if (!list || list.length === 0) {
+          return `
           <p style="margin:0;padding:8px;font-size:13px;color:#777777;">
             Yeni duyuru bulunamadı.
           </p>
         `;
-				}
+        }
 
-				return `
+        return `
         <ul style="margin:0 0 0 -12px;padding:0 0 0 24px;font-size:13px;color:#111827;line-height:1.6;">
           ${list
-						.map(item => {
-							const title = item.title || "-";
-							const href = false;
+            .map(item => {
+              const title = item.title || "-";
+              const href = false;
 
-							if (href) {
-								return `<li style="margin:0 0 6px 0;">
+              if (href) {
+                return `<li style="margin:0 0 6px 0;">
                 <a href="${href}" style="color:#1d4ed8;text-decoration:underline;">
                   ${title}
                 </a>
               </li>`;
-							} else {
-								return `<li style="margin:0 0 6px 0;">${title}</li>`;
-							}
-						})
-						.join("")}
+              } else {
+                return `<li style="margin:0 0 6px 0;">${title}</li>`;
+              }
+            })
+            .join("")}
         </ul>
       `;
-			}
+      }
 
-			const metaName = meta?.name || "";
-			const metaUri = meta?.uri || "";
-			const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+      const metaName = meta?.name || "";
+      const metaUri = meta?.uri || "";
+      const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
 
-			const addedList = renderAnnouncements(added);
+      const addedList = renderAnnouncements(added);
 
-			return `<!DOCTYPE html>
+      return `<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -644,379 +913,173 @@ const MAIL_WATCHERS = {
     </table>
   </body>
 </html>`;
-		}
-	},
-	"tcmb_odeme_kuruluslari_table_paragraf": {
-		// --------------------
-		//  parseNewData
-		// --------------------
-		parseNewData(distillPayload) {
-			const {
-				id,
-				name,
-				uri,
-				text,
-				ts,
-				to,
-				dbCollectionTable,
-				dbCollectionHtml
-			} = distillPayload;
+    }
+  },
+  "tcmb_odeme_kuruluslari_table_paragraf": {
+    render(payload) {
+      const meta = payload.meta || {};
+      const added = payload.added || {};
+      const removed = payload.removed || {};
+      const changed = payload.changed || {};
 
-			const root = JSON.parse(text || "{}");
-			const tableArr = Array.isArray(root.table) ? root.table : [];
-			const htmlArr = Array.isArray(root.html) ? root.html : [];
-			const htmlRaw = htmlArr[0] || root.html || "";
+      // 1) TABLO kısmı için: sadece table altındaki listeleri kullan
+      const tableAdded = added.table || [];
+      const tableRemoved = removed.table || [];
+      const tableChanged = changed.table || [];
 
-			// TABLO: önceki TCMB watcher ile aynı mantık
-			const tableNewData = tableArr.map(item => ({
-				kurulus_kodu: String(item.code ?? "").trim(),
-				kurulus_adi: String(item.name ?? "").trim(),
-				yetkiler: Array.isArray(item.rights) ? item.rights : []
-			}));
+      // Önce baz tablo HTML'ini üret
+      let html = renderTcmbTableTemplate({
+        meta,
+        added: tableAdded,
+        removed: tableRemoved,
+        changed: tableChanged
+      });
 
-			// HTML: tek satır, textHtml alanında tutacağız
-			const htmlNewData = htmlRaw
-				? [
-					{
-						textHtml: String(htmlRaw)
-					}
-				]
-				: [];
+      // 2) PARAGRAF kısmı için html altındaki item'lara bak
+      const htmlAdded = added.html || [];
+      const htmlRemoved = removed.html || [];
+      const htmlChanged = changed.html || [];
 
-			const trDate = ts
-				? new Date(ts).toLocaleString("tr-TR", {
-					timeZone: "Europe/Istanbul",
-					year: "numeric",
-					month: "2-digit",
-					day: "2-digit",
-					hour: "2-digit",
-					minute: "2-digit",
-					second: "2-digit"
-				})
-				: null;
+      let paragraphContent = "";
 
-			return {
-				meta: {
-					id,
-					name,
-					uri,
-					trDate,
-					to,
-					dbCollectionTable,
-					dbCollectionHtml
-				},
-				// iki ayrı dataset beraber dönüyor
-				newData: {
-					table: tableNewData,
-					html: htmlNewData
-				}
-			};
-		},
+      if (htmlChanged.length > 0) {
+        const p = htmlChanged[0];
+        paragraphContent = `
+        <div style="font-size:13px;color:#111827;line-height:1.5;">
+          <div style="margin-bottom:6px;"><strong>Önceki:</strong></div>
+          <div style="margin-bottom:10px;">${p.textHtml_eski || "-"}</div>
+          <div style="margin-bottom:6px;"><strong>Yeni:</strong></div>
+          <div>${p.textHtml || "-"}</div>
+        </div>
+      `;
+      } else if (htmlAdded.length > 0) {
+        const p = htmlAdded[0];
+        paragraphContent = `
+        <div style="font-size:13px;color:#111827;line-height:1.5;">
+          <div style="margin-bottom:6px;"><strong>Yeni paragraf:</strong></div>
+          <div>${p.textHtml || "-"}</div>
+        </div>
+      `;
+      } else if (htmlRemoved.length > 0) {
+        const p = htmlRemoved[0];
+        paragraphContent = `
+        <div style="font-size:13px;color:#111827;line-height:1.5;">
+          <div style="margin-bottom:6px;"><strong>Kaldırılan paragraf:</strong></div>
+          <div>${p.textHtml || "-"}</div>
+        </div>
+      `;
+      } else {
+        // hiçbir değişiklik yok
+        paragraphContent = `
+        <p style="margin:0;font-size:13px;color:#777777;">
+          Paragraf değişikliği bulunmamaktadır.
+        </p>
+      `;
+      }
 
-		// --------------------
-		//  getOldData
-		// --------------------
-		async getOldData(databases, meta) {
-			const limit = 100;
+      // 3) Bu paragraf bloğunu Footer'dan hemen önce enjekte et
+      const marker = "<!-- Footer -->";
+      const idx = html.indexOf(marker);
 
-			async function loadAll(collectionId, mapFn) {
-				if (!collectionId) return [];
+      if (idx === -1) {
+        // marker bulunmazsa, en sona ekleyelim (extreme case)
+        return html.replace(
+          "</table>\n        </td>\n      </tr>\n    </table>\n  </body>",
+          `
+            <!-- Paragraf Değişiklikleri (fallback) -->
+            <tr>
+              <td style="padding:0 24px 24px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Paragraf Değişiklikleri
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
+                      ${paragraphContent}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>`
+        );
+      }
 
-				let offset = 0;
-				let allDocs = [];
-				let keepGoing = true;
+      const before = html.slice(0, idx);
+      const after = html.slice(idx);
 
-				while (keepGoing) {
-					const page = await databases.listDocuments(
-						APPWRITE_DATABASE_ID,
-						collectionId,
-						[Query.limit(limit), Query.offset(offset)]
-					);
+      const paragraphBlock = `
+            <!-- Paragraf Değişiklikleri -->
+            <tr>
+              <td style="padding:0 24px 24px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:18px;font-weight:bold;color:#000000;padding-bottom:8px;">
+                      Paragraf Değişiklikleri
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
+                      ${paragraphContent}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+`;
 
-					allDocs = allDocs.concat(page.documents);
+      return before + paragraphBlock + after;
+    }
+  },
 
-					if (page.documents.length < limit) {
-						keepGoing = false;
-					} else {
-						offset += limit;
-					}
-				}
 
-				return allDocs.map(mapFn);
-			}
+  "tcmb_duyurular": {
+    render({ meta, added /*, removed, changed */ }) {
 
-			// TABLO: kurulus_kodu / kurulus_adi / yetkiler
-			const tableOld = await loadAll(meta.dbCollectionTable, doc => ({
-				docId: doc.$id,
-				kurulus_kodu: doc.kurulus_kodu,
-				kurulus_adi: doc.kurulus_adi,
-				yetkiler: doc.yetkiler || []
-			}));
-
-			// HTML: tek kayıt, textHtml alanında
-			const htmlOld = await loadAll(meta.dbCollectionHtml, doc => ({
-				docId: doc.$id,
-				textHtml: doc.textHtml || ""
-			}));
-
-			return {
-				table: tableOld,
-				html: htmlOld
-			};
-		},
-
-		// --------------------
-		//  compare
-		// --------------------
-		compare(oldData, newData) {
-			const oldTable = oldData.table || [];
-			const newTable = newData.table || [];
-
-			const oldHtml = oldData.html || [];
-			const newHtml = newData.html || [];
-
-			// ==== TABLO KARŞILAŞTIRMA (eski TCMB mantığı) ====
-			const oldCodes = new Set(oldTable.map(i => i.kurulus_kodu));
-			const newCodes = new Set(newTable.map(i => i.kurulus_kodu));
-
-			const tableAdded = newTable.filter(i => !oldCodes.has(i.kurulus_kodu));
-			const tableRemoved = oldTable.filter(i => !newCodes.has(i.kurulus_kodu));
-
-			const common = newTable.filter(i => oldCodes.has(i.kurulus_kodu));
-
-			const degisenName = [];
-			const degisenRights = [];
-
-			for (let i = 0; i < common.length; i++) {
-				const item = common[i];
-				const kod = item.kurulus_kodu;
-				const oldItem = oldTable.find(x => x.kurulus_kodu === kod);
-				if (!oldItem) continue;
-
-				if (item.kurulus_adi !== oldItem.kurulus_adi) {
-					degisenName.push(item);
-				}
-
-				const yeniYet = item.yetkiler || [];
-				const eskiYet = oldItem.yetkiler || [];
-
-				const yetkiDegisti =
-					eskiYet.length !== yeniYet.length ||
-					eskiYet.some(y => !yeniYet.includes(y)) ||
-					yeniYet.some(y => !eskiYet.includes(y));
-
-				if (yetkiDegisti) {
-					degisenRights.push(item);
-				}
-			}
-
-			const tumDegisen = [...degisenName, ...degisenRights];
-			const seen = new Set();
-			const uniqNew = [];
-
-			for (let i = 0; i < tumDegisen.length; i++) {
-				const it = tumDegisen[i];
-				if (!seen.has(it.kurulus_kodu)) {
-					seen.add(it.kurulus_kodu);
-					uniqNew.push(it);
-				}
-			}
-
-			const tableChanged = uniqNew.map(newItem => {
-				const kod = newItem.kurulus_kodu;
-				const oldItem = oldTable.find(x => x.kurulus_kodu === kod) || {};
-
-				return {
-					kurulus_kodu: kod,
-					kurulus_adi: newItem.kurulus_adi,
-					kurulus_adi_eski: oldItem.kurulus_adi ?? null,
-					yetkiler: newItem.yetkiler || [],
-					yetkiler_eski: oldItem.yetkiler || []
-				};
-			});
-
-			// ==== HTML KARŞILAŞTIRMA (tek kayıt) ====
-			let htmlAdded = [];
-			let htmlRemoved = [];
-			let htmlChanged = [];
-
-			const oldHtmlItem = oldHtml[0];
-			const newHtmlItem = newHtml[0];
-
-			if (!oldHtmlItem && newHtmlItem) {
-				// databasede yoktu → eklendi
-				htmlAdded = [newHtmlItem];
-			} else if (oldHtmlItem && !newHtmlItem) {
-				// databasede vardı, sayfadan kalktı
-				htmlRemoved = [oldHtmlItem];
-			} else if (oldHtmlItem && newHtmlItem) {
-				if ((oldHtmlItem.textHtml || "") !== (newHtmlItem.textHtml || "")) {
-					htmlChanged = [
-						{
-							textHtml_eski: oldHtmlItem.textHtml || "",
-							textHtml: newHtmlItem.textHtml || ""
-						}
-					];
-				}
-			}
-
-			// sendReportMail için birleşik obje
-			return {
-				added: {
-					table: tableAdded,
-					html: htmlAdded
-				},
-				removed: {
-					table: tableRemoved,
-					html: htmlRemoved
-				},
-				changed: {
-					table: tableChanged,
-					html: htmlChanged
-				}
-			};
-		},
-
-		// --------------------
-		//  syncDb
-		// --------------------
-		async syncDb(databases, oldData, newData, removed, meta) {
-			const oldTable = oldData.table || [];
-			const newTable = newData.table || [];
-
-			const oldHtml = oldData.html || [];
-			const newHtml = newData.html || [];
-
-			const removedTable = (removed && removed.table) || [];
-			const removedHtml = (removed && removed.html) || [];
-
-			// === TABLO SENKRONU (eski TCMB syncDb ile aynı mantık) ===
-			if (meta.dbCollectionTable) {
-				const byCode = new Map(
-					oldTable.map(i => [i.kurulus_kodu, i])
-				);
-
-				// removed sil
-				for (let i = 0; i < removedTable.length; i++) {
-					const item = removedTable[i];
-					const existing = byCode.get(item.kurulus_kodu);
-					if (existing?.docId) {
-						await databases.deleteDocument(
-							APPWRITE_DATABASE_ID,
-							meta.dbCollectionTable,
-							existing.docId
-						);
-					}
-				}
-
-				// upsert
-				for (let i = 0; i < newTable.length; i++) {
-					const item = newTable[i];
-					const existing = byCode.get(item.kurulus_kodu);
-
-					const payload = {
-						kurulus_kodu: item.kurulus_kodu,
-						kurulus_adi: item.kurulus_adi,
-						yetkiler: item.yetkiler
-					};
-
-					if (existing?.docId) {
-						await databases.updateDocument(
-							APPWRITE_DATABASE_ID,
-							meta.dbCollectionTable,
-							existing.docId,
-							payload
-						);
-					} else {
-						await databases.createDocument(
-							APPWRITE_DATABASE_ID,
-							meta.dbCollectionTable,
-							ID.unique(),
-							payload
-						);
-					}
-				}
-			}
-
-			// === HTML SENKRONU (tek kayıt, textHtml alanı) ===
-			if (meta.dbCollectionHtml) {
-				const oldItem = oldHtml[0] || null;
-				const newItem = newHtml[0] || null;
-
-				// removed varsa hepsini sil (biz zaten max 1 kayıt bekliyoruz)
-				if (removedHtml.length && oldItem?.docId) {
-					await databases.deleteDocument(
-						APPWRITE_DATABASE_ID,
-						meta.dbCollectionHtml,
-						oldItem.docId
-					);
-				}
-
-				// yeni html varsa create/update
-				if (newItem) {
-					const payload = { textHtml: newItem.textHtml || "" };
-
-					if (oldItem?.docId) {
-						await databases.updateDocument(
-							APPWRITE_DATABASE_ID,
-							meta.dbCollectionHtml,
-							oldItem.docId,
-							payload
-						);
-					} else {
-						await databases.createDocument(
-							APPWRITE_DATABASE_ID,
-							meta.dbCollectionHtml,
-							ID.unique(),
-							payload
-						);
-					}
-				}
-			}
-		}
-	},
-
-	"tcmb_duyurular": {
-		render({ meta, added /*, removed, changed */ }) {
-
-			function renderAnnouncements(list) {
-				if (!list || list.length === 0) {
-					return `
+      function renderAnnouncements(list) {
+        if (!list || list.length === 0) {
+          return `
           <p style="margin:0;padding:8px;font-size:13px;color:#777777;">
             Yeni duyuru bulunamadı.
           </p>
         `;
-				}
+        }
 
-				return `
+        return `
         <ul style="margin:0 0 0 -12px;padding:0 0 0 24px;font-size:13px;color:#111827;line-height:1.6;">
           ${list
-						.map(item => {
-							const title = item.title || "-";
-							const href = false;
+            .map(item => {
+              const title = item.title || "-";
+              const href = false;
 
-							if (href) {
-								return `<li style="margin:0 0 6px 0;">
+              if (href) {
+                return `<li style="margin:0 0 6px 0;">
                 <a href="${href}" style="color:#1d4ed8;text-decoration:underline;">
                   ${title}
                 </a>
               </li>`;
-							} else {
-								return `<li style="margin:0 0 6px 0;">${title}</li>`;
-							}
-						})
-						.join("")}
+              } else {
+                return `<li style="margin:0 0 6px 0;">${title}</li>`;
+              }
+            })
+            .join("")}
         </ul>
       `;
-			}
+      }
 
-			const metaName = meta?.name || "";
-			const metaUri = meta?.uri || "";
-			const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+      const metaName = meta?.name || "";
+      const metaUri = meta?.uri || "";
+      const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
 
-			const addedList = renderAnnouncements(added);
+      const addedList = renderAnnouncements(added);
 
-			return `<!DOCTYPE html>
+      return `<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1095,8 +1158,8 @@ const MAIL_WATCHERS = {
     </table>
   </body>
 </html>`;
-		}
-	}
+    }
+  }
 
 
 
@@ -1106,48 +1169,48 @@ const MAIL_WATCHERS = {
 // Watcher seçimi (öncekine benzer)
 // -------------------------
 function pickWatcher(meta) {
-	const key = meta?.id; // Distill slug
-	return MAIL_WATCHERS[key];
+  const key = meta?.id; // Distill slug
+  return MAIL_WATCHERS[key];
 }
 
 // -------------------------
 // Ana handler
 // -------------------------
 module.exports = async (context) => {
-	const { req, res, log, error } = context;
+  const { req, res, log, error } = context;
 
-	try {
-		log("Mail function started");
+  try {
+    log("Mail function started");
 
-		const rawBody = req.body || {};
-		const body = typeof rawBody === "string" ? JSON.parse(rawBody) : rawBody;
+    const rawBody = req.body || {};
+    const body = typeof rawBody === "string" ? JSON.parse(rawBody) : rawBody;
 
-		// 1) normalize (payload hep aynı)
-		const payload = normalizePayload(body);
+    // 1) normalize (payload hep aynı)
+    const payload = normalizePayload(body);
 
-		// 2) watcher seç
-		const watcher = pickWatcher(payload.meta);
-		if (!watcher) {
-			throw new Error(`Mail watcher bulunamadı. meta.id=${payload.meta?.id}`);
-		}
+    // 2) watcher seç
+    const watcher = pickWatcher(payload.meta);
+    if (!watcher) {
+      throw new Error(`Mail watcher bulunamadı. meta.id=${payload.meta?.id}`);
+    }
 
-		// 3) render (watcher bilir)
-		const html = watcher.render(payload);
+    // 3) render (watcher bilir)
+    const html = watcher.render(payload);
 
-		// 4) send
-		const transporter = createTransporter();
+    // 4) send
+    const transporter = createTransporter();
 
-		await transporter.sendMail({
-			from: process.env.SMTP_FROM,
-			to: payload.to,
-			subject: "Güncelleme Raporu", // SABİT
-			html
-		});
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM,
+      to: payload.to,
+      subject: "Güncelleme Raporu", // SABİT
+      html
+    });
 
-		log("Mail sent successfully");
-		return res.json({ ok: true, message: "Mail gönderildi" }, 200);
-	} catch (err) {
-		if (error) error(err);
-		return res.json({ ok: false, error: err.message }, 500);
-	}
+    log("Mail sent successfully");
+    return res.json({ ok: true, message: "Mail gönderildi" }, 200);
+  } catch (err) {
+    if (error) error(err);
+    return res.json({ ok: false, error: err.message }, 500);
+  }
 };
