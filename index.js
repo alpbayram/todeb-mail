@@ -646,9 +646,9 @@ const MAIL_WATCHERS = {
 </html>`;
     }
   },
-
   "tcmb_odeme_kuruluslari_table_paragraf": {
-    render({ meta, added, removed, changed }) {
+    render({ meta, added = {}, removed = {}, changed = {} }) {
+      // ---- 1) Nested objeleri aç ----
       const tableAdded = added.table || [];
       const tableRemoved = removed.table || [];
       const tableChanged = changed.table || [];
@@ -975,6 +975,7 @@ const MAIL_WATCHERS = {
 </html>`;
     }
   },
+
   "tcmb_duyurular": {
     render({ meta, added /*, removed, changed */ }) {
 
