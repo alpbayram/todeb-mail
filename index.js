@@ -764,10 +764,7 @@ const MAIL_WATCHERS = {
       if (htmlChanged.length > 0) {
         const p = htmlChanged[0];
         paragraphInner = `
-          <div style="font-size:13px;color:#111827;line-height:1.5;">
-            <div style="margin-bottom:6px;"><strong>Önceki:</strong></div>
-            <div style="margin-bottom:10px;">${p.textHtml_eski || "-"}</div>
-            <div style="margin-bottom:6px;"><strong>Yeni:</strong></div>
+          <div style="font-size:13px;color:#111827;line-height:1.5;">           
             <div>${p.textHtml || "-"}</div>
           </div>
         `;
