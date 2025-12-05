@@ -652,30 +652,45 @@ const MAIL_WATCHERS = {
     }
   },
   "duyurular": {
-    render({ meta, added /*, removed, changed */ }) {
+  render({ meta, added /*, removed, changed */ }) {
 
-      function renderAnnouncements(list) {
-        if (!list || list.length === 0) {
-          return `
+    // GİB base URL – slug bunun arkasına eklenecek
+    const BASE_URL = "https://gib.gov.tr/duyuru-arsivi/guncel/";
+
+    function renderAnnouncements(list) {
+      if (!list || list.length === 0) {
+        return `
           <p style="margin:0;padding:8px;font-size:13px;color:#777777;">
             Yeni duyuru bulunamadı.
           </p>
         `;
-        }
+      }
 
-        return `
+      return `
         <ul style="margin:0 0 0 -12px;padding:0 0 0 24px;font-size:13px;color:#111827;line-height:1.6;">
           ${list
             .map(item => {
               const title = item.title || "-";
-              const href = false;
+
+              // Öncelik: item.href > item.slug
+              let href = null;
+
+              if (item.href) {
+                href = item.href;
+              } else if (item.slug) {
+                // slug başında / varsa temizle
+                const cleanSlug = String(item.slug).replace(/^\/+/, "");
+                href = BASE_URL + cleanSlug;
+              }
 
               if (href) {
-                return `<li style="margin:0 0 6px 0;">
-                <a href="${href}" style="color:#1d4ed8;text-decoration:underline;">
-                  ${title}
-                </a>
-              </li>`;
+                return `
+                  <li style="margin:0 0 6px 0;">
+                    <a href="${href}" style="color:#1d4ed8;text-decoration:underline;">
+                      ${title}
+                    </a>
+                  </li>
+                `;
               } else {
                 return `<li style="margin:0 0 6px 0;">${title}</li>`;
               }
@@ -683,15 +698,15 @@ const MAIL_WATCHERS = {
             .join("")}
         </ul>
       `;
-      }
+    }
 
-      const metaName = meta?.name || "";
-      const metaUri = meta?.uri || "";
-      const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
+    const metaName = meta?.name || "";
+    const metaUri = meta?.uri || "";
+    const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
 
-      const addedList = renderAnnouncements(added);
+    const addedList = renderAnnouncements(added);
 
-      return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -770,8 +785,9 @@ const MAIL_WATCHERS = {
     </table>
   </body>
 </html>`;
-    }
-  },
+  }
+},
+
   "tcmb_odeme_kuruluslari_table_paragraf": {
     render({ meta, added = {}, removed = {}, changed = {} }) {
       // ---- 1) Nested objeleri aç ----
