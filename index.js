@@ -554,13 +554,12 @@ const MAIL_WATCHERS = {
   // (sadece Yeni Duyurular listesini gösterir)
   // ------------------------------------------------
   "vergi_mevzuati": {
-    render({ meta, added /*, removed, changed */ }) {
-
-      function renderAnnouncements(list) {
+    render({ meta, added, removed }) {
+      function renderList(list, useHref) {
         if (!list || list.length === 0) {
           return `
           <p style="margin:0;padding:8px;font-size:13px;color:#777777;">
-            Yeni duyuru bulunamadı.
+            Kayıt bulunamadı.
           </p>
         `;
         }
@@ -570,16 +569,22 @@ const MAIL_WATCHERS = {
           ${list
             .map(item => {
               const title = item.title || "-";
-              const href = false;
+              const href = useHref ? item.href : null;
 
               if (href) {
-                return `<li style="margin:0 0 6px 0;">
-                <a href="${href}" style="color:#1d4ed8;text-decoration:underline;">
-                  ${title}
-                </a>
-              </li>`;
+                return `
+                  <li style="margin:0 0 6px 0;">
+                    <a href="${href}" style="color:#1d4ed8;text-decoration:underline;">
+                      ${title}
+                    </a>
+                  </li>
+                `;
               } else {
-                return `<li style="margin:0 0 6px 0;">${title}</li>`;
+                return `
+                  <li style="margin:0 0 6px 0;">
+                    ${title}
+                  </li>
+                `;
               }
             })
             .join("")}
@@ -591,14 +596,16 @@ const MAIL_WATCHERS = {
       const metaUri = meta?.uri || "";
       const metaTrDate = meta?.trDate || new Date().toLocaleDateString("tr-TR");
 
-      const addedList = renderAnnouncements(added);
+      // added: href var (newData'dan geliyor), removed: sadece title/mevzuat_id
+      const addedList = renderList(added, true);
+      const removedList = renderList(removed, false);
 
       return `<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yeni Duyurular</title>
+    <title>Vergi Mevzuatı Güncelleme</title>
   </head>
 
   <body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;">
@@ -641,18 +648,36 @@ const MAIL_WATCHERS = {
 
             <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
 
-            <!-- YENİ DUYURULAR -->
+            <!-- YENİ EKLENENLER -->
             <tr>
-              <td style="padding:0 24px 24px 24px;">
+              <td style="padding:0 24px 16px 24px;">
                 <table width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td style="font-size:16px;font-weight:bold;color:#000000;padding-bottom:6px;">
-                      Yeni Duyurular
+                      Yeni Eklenenler
                     </td>
                   </tr>
                   <tr>
                     <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
                       ${addedList}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- LİSTEDEN KALDIRILANLAR -->
+            <tr>
+              <td style="padding:0 24px 24px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:16px;font-weight:bold;color:#000000;padding-bottom:6px;">
+                      Listeden Kaldırılanlar
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
+                      ${removedList}
                     </td>
                   </tr>
                 </table>
@@ -674,6 +699,7 @@ const MAIL_WATCHERS = {
 </html>`;
     }
   },
+
   "duyurular": {
     render({ meta, added /*, removed, changed */ }) {
 
