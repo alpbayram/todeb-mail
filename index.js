@@ -465,7 +465,178 @@ const MAIL_WATCHERS = {
 </html>`;
     }
   },
+"gib_uluslararasi_mevzuat": {
+  render({ meta, added, removed /* changed yok */ }) {
+    const BASE_URL = "https://gib.gov.tr";
 
+    function buildHref(item) {
+      // 1) parseNewData’den gelen href varsa onu kullan
+      if (item.href) return item.href;
+
+      // 2) yoksa mevzuat_id'den üret: turId_id
+      if (item.mevzuat_id) {
+        const [turId, docId] = String(item.mevzuat_id).split("_");
+        if (turId && docId) {
+          return `${BASE_URL}/mevzuat/tur/${turId}/anlasma/${docId}`;
+        }
+      }
+
+      // 3) link üretemiyorsak null dön
+      return null;
+    }
+
+    function renderList(list) {
+      if (!list || list.length === 0) {
+        return `
+          <p style="margin:0;padding:8px;font-size:13px;color:#777777;">
+            Kayıt bulunamadı.
+          </p>
+        `;
+      }
+
+      return `
+        <ul style="margin:0 0 0 -12px;padding:0 0 0 24px;font-size:13px;color:#111827;line-height:1.6;">
+          ${list
+            .map((item) => {
+              const title = item.title || "-";
+              const href = buildHref(item);
+
+              if (href) {
+                return `
+                  <li style="margin:0 0 6px 0;">
+                    <a href="${href}" style="color:#1d4ed8;text-decoration:underline;">
+                      ${title}
+                    </a>
+                  </li>
+                `;
+              } else {
+                return `
+                  <li style="margin:0 0 6px 0;">
+                    ${title}
+                  </li>
+                `;
+              }
+            })
+            .join("")}
+        </ul>
+      `;
+    }
+
+    const metaName = meta?.name || "";
+    const metaUri = meta?.uri || "";
+    const metaTrDate =
+      meta?.trDate || new Date().toLocaleDateString("tr-TR");
+
+    const addedList = renderList(added);
+    const removedList = renderList(removed);
+
+    return `<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Uluslararası Mevzuat Güncelleme</title>
+  </head>
+
+  <body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" border="0"
+            style="width:600px;max-width:600px;border:12px solid #42525e;background-color:#ffffff;border-radius:18px;">
+
+            <!-- Header -->
+            <tr>
+              <td align="center" style="background-color:#d4d4d4;padding:16px 0 12px 0;">
+                <img
+                  src="https://raw.githubusercontent.com/alpbayram/todeb-mail/refs/heads/main/TODEB_Logo.png"
+                  alt="TODEB Logo"
+                  width="280"
+                  height="auto"
+                  style="display:block;border:none;outline:none;text-decoration:none;"
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="background-color:#d4d4d4;padding:8px 24px 12px 24px;">
+                ${
+                  metaName
+                    ? `
+                  <p style="margin:0;font-size:24px;font-weight:bold;color:#000000;">
+                    ${metaName}
+                  </p>
+                `
+                    : ""
+                }
+
+                ${
+                  metaUri
+                    ? `
+                  <p style="margin:4px 0 0 0;font-size:12px;">
+                    <a href="${metaUri}" style="color:#1d4ed8;text-decoration:underline;">
+                      Siteye gitmek için tıklayınız
+                    </a>
+                  </p>
+                `
+                    : ""
+                }
+              </td>
+            </tr>
+
+            <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+
+            <!-- YENİ EKLENENLER -->
+            <tr>
+              <td style="padding:0 24px 16px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:16px;font-weight:bold;color:#000000;padding-bottom:6px;">
+                      Yeni Eklenenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
+                      ${addedList}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- SİLİNENLER -->
+            <tr>
+              <td style="padding:0 24px 24px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="font-size:16px;font-weight:bold;color:#000000;padding-bottom:6px;">
+                      Silinenler
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
+                      ${removedList}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td align="center" style="background-color:#f0f0f0;padding:12px;font-size:12px;color:#000000;">
+                ${metaTrDate}
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+  }
+},
   "tcmb_odeme_kuruluslari_paragraf": {
     render({ meta, added, removed, changed }) {
       const metaName = meta?.name || "";
