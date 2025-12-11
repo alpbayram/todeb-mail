@@ -609,25 +609,6 @@ const MAIL_WATCHERS = {
                 </table>
               </td>
             </tr>
-
-            <!-- BAŞLIĞI DEĞİŞEN TASLAKLAR -->
-            <tr>
-              <td style="padding:0 24px 24px 24px;">
-                <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td style="font-size:16px;font-weight:bold;color:#000000;padding-bottom:6px;">
-                      Başlığı Değişen Taslaklar
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="border:2px solid #b0b0b0;padding:10px;font-size:14px;color:#405464;">
-                      ${changedList}
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
             <!-- Footer -->
             <tr>
               <td align="center" style="background-color:#f0f0f0;padding:12px;font-size:12px;color:#000000;">
