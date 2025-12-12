@@ -558,7 +558,7 @@ const MAIL_WATCHERS = {
               <td align="center" style="background-color:#d4d4d4;padding:8px 24px 12px 24px;">
                 ${metaName ? `
                   <p style="margin:0;font-size:24px;font-weight:bold;color:#000000;">
-                    ${metaName} - Taslaklar
+                    ${metaName}
                   </p>
                 ` : ""}
 
